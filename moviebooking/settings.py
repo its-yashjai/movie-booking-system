@@ -10,7 +10,7 @@ load_dotenv(os.path.join(BASE_DIR, '.env'))
 def env(key, default=None):
     return os.environ.get(key, default)
 
-SECRET_KEY = "django-insecure-%ejejq7abc9^3iy8@#2x-9d#*cr&$lnau%!y@2e)+84d73z(_b"
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-change-me-in-production')
 
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
@@ -272,17 +272,17 @@ import cloudinary.uploader
 import cloudinary.api
 
 cloudinary.config(
-    cloud_name=os.environ.get('CLOUDINARY_CLOUD_NAME', 'drdvl5dab'),
-    api_key=os.environ.get('CLOUDINARY_API_KEY', '858736468657877'),
-    api_secret=os.environ.get('CLOUDINARY_API_SECRET', '_Xj5H6Cl9l8vD6pzYi02eBLG0vk')
+    cloud_name=os.environ.get('CLOUDINARY_CLOUD_NAME', ''),
+    api_key=os.environ.get('CLOUDINARY_API_KEY', ''),
+    api_secret=os.environ.get('CLOUDINARY_API_SECRET', '')
 )
 
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-MEDIA_URL = '/media/'  # Cloudinary handles the actual URL transformation
+MEDIA_URL = '/media/'
 CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME', 'drdvl5dab'),
-    'API_KEY': os.environ.get('CLOUDINARY_API_KEY', '858736468657877'),
-    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET', '_Xj5H6Cl9l8vD6pzYi02eBLG0vk')
+    'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME', ''),
+    'API_KEY': os.environ.get('CLOUDINARY_API_KEY', ''),
+    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET', '')
 }
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
@@ -318,7 +318,7 @@ else:
     DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'yaja23aiml@cmrit.ac.in')
     print("🧪 EMAIL: Using console backend (development mode)")
 
-SITE_URL = os.environ.get('SITE_URL', 'http://localhost:8000')
+SITE_URL = os.environ.get('SITE_URL', 'http://localhost:8000').rstrip('/')
 
 LOGGING = {
     'version': 1,

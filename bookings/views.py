@@ -391,6 +391,11 @@ def payment_success(request, booking_id):
 
         from django.db import transaction
         
+        # Only save the booking inside the transaction — keep it as short as possible.
+        # DatabaseCache uses the same SQLite DB, so any cache.get/set inside a
+        # transaction.atomic() block will try to acquire a second write lock and
+        # deadlock SQLite ("database is locked"). confirm_seats() does cache I/O,
+        # so it MUST run AFTER the transaction closes.
         with transaction.atomic():
             if supports_select_for_update():
                 booking = Booking.objects.select_for_update().get(id=booking.id)
@@ -409,9 +414,11 @@ def payment_success(request, booking_id):
             booking.status = 'CONFIRMED'
             booking.confirmed_at = timezone.now()
             booking.save()
-            
-            # Confirm seats inside the transaction so it's atomic with booking save
-            SeatManager.confirm_seats(booking.showtime.id, booking.seats)
+            # ← transaction commits here; SQLite write lock released
+        
+        # confirm_seats() does cache reads/writes (DatabaseCache = DB I/O).
+        # Running it outside the transaction avoids the SQLite deadlock.
+        SeatManager.confirm_seats(booking.showtime.id, booking.seats)
         
         logger.info(f"✅ Booking {booking.booking_number} confirmed and payment received")
         

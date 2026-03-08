@@ -24,7 +24,7 @@ class Command(BaseCommand):
             '--password',
             type=str,
             default=None,
-            help='Admin password (default: admin123)'
+            help='Admin password (required)'
         )
         parser.add_argument(
             '--reset',
@@ -35,7 +35,9 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         username = options['username']
         email = options['email']
-        password = options.get('password') or 'admin123'
+        password = options.get('password')
+        if not password:
+            raise CommandError('❌ A password must be provided via --password. No default is allowed for security reasons.')
         reset = options['reset']
 
         self.stdout.write(self.style.WARNING('\n' + '='*60))
@@ -107,7 +109,7 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS('='*60))
             self.stdout.write(f'  Username:       {username}')
             self.stdout.write(f'  Email:          {email}')
-            self.stdout.write(f'  Password:       {password}')
+            self.stdout.write(f'  Password:       {"*" * len(password)}')
             self.stdout.write(f'  Staff Status:   {user.is_staff}')
             self.stdout.write(f'  Superuser:      {user.is_superuser}')
             self.stdout.write(f'  Active:         {user.is_active}')
@@ -124,7 +126,4 @@ class Command(BaseCommand):
             )
 
         except Exception as e:
-            self.stdout.write(
-                self.style.ERROR(f'❌ Error creating/resetting admin user: {str(e)}\n')
-            )
             raise CommandError(f'Failed to create/reset admin: {str(e)}')
