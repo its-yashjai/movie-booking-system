@@ -9,6 +9,11 @@ try:
     from celery import shared_task
 except ImportError:
     def shared_task(*args, **kwargs):
+        # Handle both @shared_task (bare) and @shared_task(...) (with args)
+        # When used bare: shared_task(func) — args[0] is the function itself
+        if len(args) == 1 and callable(args[0]) and not kwargs:
+            return args[0]
+        # When used with parens: @shared_task(bind=True, ...) — return decorator
         def decorator(func):
             return func
         return decorator
