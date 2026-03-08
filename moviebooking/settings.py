@@ -125,19 +125,32 @@ else:
 
 if not DEBUG:
     DATABASES['default']['CONN_MAX_AGE'] = 600
-CACHES = {
-    'default': {
-        'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': os.environ.get('REDIS_URL', 'redis://localhost:6379/0'),
-        'OPTIONS': {
-            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-            'COMPRESSOR': 'django_redis.compressors.zlib.ZlibCompressor',
-            'SOCKET_CONNECT_TIMEOUT': 5,
-            'SOCKET_TIMEOUT': 5,
-        },
-        'KEY_PREFIX': 'moviebooking',
+# Cache configuration - use Redis if available, otherwise use database
+REDIS_URL = os.environ.get('REDIS_URL', '')
+
+if REDIS_URL:
+    # Use Redis if configured
+    CACHES = {
+        'default': {
+            'BACKEND': 'django_redis.cache.RedisCache',
+            'LOCATION': REDIS_URL,
+            'OPTIONS': {
+                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+                'COMPRESSOR': 'django_redis.compressors.zlib.ZlibCompressor',
+                'SOCKET_CONNECT_TIMEOUT': 5,
+                'SOCKET_TIMEOUT': 5,
+            },
+            'KEY_PREFIX': 'moviebooking',
+        }
     }
-}
+else:
+    # Fallback to database cache (works without Redis)
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+            'LOCATION': 'django_cache_table',
+        }
+    }
 
 CSRF_TRUSTED_ORIGINS = [
     'https://moviebookingapp-production-0bce.up.railway.app',
