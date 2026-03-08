@@ -36,3 +36,7 @@ celerybeat-schedule.db
 
 # Redis
 dump.rdb
+
+# Deployment
+.env.deployment
+.DEPLOY_QUICK_REF
