@@ -1,0 +1,22 @@
+{
+  "buildCommand": "pip install -r requirements.txt && python manage.py collectstatic --noinput",
+  "env": {
+    "DJANGO_SETTINGS_MODULE": "moviebooking.settings_production",
+    "PYTHONUNBUFFERED": "1"
+  },
+  "functions": {
+    "moviebooking/wsgi.py": {
+      "runtime": "python3.9"
+    }
+  },
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "moviebooking/wsgi.py"
+    }
+  ],
+  "github": {
+    "enabled": true,
+    "production": true
+  }
+}
