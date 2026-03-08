@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6; 
+            color: #333;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container { 
+            max-width: 600px; 
+            margin: 30px auto; 
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            color: white; 
+            padding: 40px 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        .content { 
+            padding: 40px 30px;
+            background: white;
+        }
+        .otp-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 36px;
+            font-weight: bold;
+            letter-spacing: 8px;
+            text-align: center;
+            padding: 25px;
+            margin: 30px 0;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            box-shadow: 0 4px 6px rgba(102, 126, 234, 0.3);
+        }
+        .info-box {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .warning-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+            color: #856404;
+        }
+        .footer { 
+            text-align: center; 
+            font-size: 13px; 
+            color: #666; 
+            padding: 30px;
+            background: #f8f9fa;
+        }
+        ul { padding-left: 20px; }
+        ul li { margin: 10px 0; }
+        a { color: #667eea; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Email Verification</h1>
+            <p style="margin: 10px 0 0 0; font-size: 16px; opacity: 0.9;">Welcome to BookMyshowClone!</p>
+        </div>
+        
+        <div class="content">
+            <p style="font-size: 16px;">Hello <strong>{{ username }}</strong>,</p>
+            
+            <p>Thank you for signing up! Please verify your email address by entering the verification code below:</p>
+            
+            <div class="otp-box">
+                {{ otp }}
+            </div>
+            
+            <div class="info-box">
+                <strong>Important:</strong> This code will expire in <strong>{{ expiry_minutes }} minutes</strong>.
+            </div>
+            
+            <p>Once verified, you'll enjoy:</p>
+            <ul>
+                <li><strong>Book movie tickets</strong> - Easy and fast booking</li>
+                <li><strong>Manage your account</strong> - Update preferences anytime</li>
+                <li><strong>Booking confirmations</strong> - Get instant updates</li>
+                <li><strong>Exclusive offers</strong> - Special deals for members</li>
+            </ul>
+            
+            <div class="warning-box">
+                <strong>Security Notice:</strong> If you didn't create this account, please ignore this email. Your email address will not be used.
+            </div>
+            
+            <p style="margin-top: 30px;">
+                Need help? Contact us at <a href="mailto:support@bookmyshowclone.com">support@bookmyshowclone.com</a>
+            </p>
+            
+            <p style="margin-top: 30px;">
+                Happy watching!<br>
+                <strong>The BookMyshowClone Team</strong>
+            </p>
+        </div>
+        
+        <div class="footer">
+            <p>&copy; 2025 BookMyshowClone. All rights reserved.</p>
+            <p style="margin-top: 10px;">
+                <a href="{{ site_url }}">Visit Website</a> | 
+                <a href="{{ site_url }}/help">Help Center</a> | 
+                <a href="{{ site_url }}/privacy">Privacy Policy</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

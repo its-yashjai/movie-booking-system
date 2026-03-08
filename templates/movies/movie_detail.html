@@ -1,0 +1,351 @@
+{% extends 'base/base.html' %}
+
+{% block title %}{{ movie.title }} - BookMyshowClone{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Movie Header -->
+    <div class="row mb-5">
+        <!-- Poster Column -->
+        <div class="col-md-3">
+            {% if movie.poster %}
+            <img src="{{ movie.poster.url }}" class="img-fluid rounded shadow movie-detail-poster" alt="{{ movie.title }}" style="width: 100%; height: auto; aspect-ratio: 2/3; object-fit: cover;">
+            {% else %}
+            <div class="rounded shadow d-flex align-items-center justify-content-center" style="width: 100%; height: auto; aspect-ratio: 2/3; background: var(--surface-light);">
+                <i class="fas fa-film fa-5x" style="color: rgba(229, 9, 20, 0.3);"></i>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Trailer Column -->
+        <div class="col-md-3">
+            {% if movie.trailer_url %}
+                {% if movie.youtube_id %}
+            <div>
+                <h5 class="mb-3" style="color: var(--text-white);"><i class="fab fa-youtube" style="color: var(--primary-accent);"></i><span class="ms-2">Official Trailer</span></h5>
+                <div class="ratio ratio-16x9 shadow rounded overflow-hidden position-relative cursor-pointer trailer-thumbnail" 
+                     onclick="openTrailerModal('{{ movie.youtube_id }}')"
+                     style="background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://img.youtube.com/vi/{{ movie.youtube_id }}/maxresdefault.jpg'); background-size: cover; background-position: center;">
+                    <div class="d-flex align-items-center justify-content-center">
+                        <div class="play-button-overlay">
+                            <i class="fab fa-youtube" style="font-size: 80px; color: var(--primary-accent);"></i>
+                            <div class="play-icon-circle">
+                                <i class="fas fa-play" style="font-size: 30px; color: white; margin-left: 5px;"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="position-absolute bottom-0 start-0 p-3" style="color: rgba(255, 255, 255, 0.8);">
+                        <small><i class="fas fa-video me-1"></i>Click to watch trailer</small>
+                    </div>
+                </div>
+            </div>
+                {% else %}
+            <div>
+                <h5 class="mb-3" style="color: var(--text-white);"><i class="fas fa-external-link-alt" style="color: var(--tertiary-accent);"></i><span class="ms-2">Watch Trailer</span></h5>
+                <a href="{{ movie.trailer_url }}" target="_blank" class="btn btn-lg" style="background: var(--tertiary-accent); color: white;">
+                    <i class="fas fa-play-circle me-2"></i>Open Trailer in New Tab
+                </a>
+            </div>
+                {% endif %}
+            {% endif %}
+        </div>
+        
+        <!-- Movie Info Column -->
+        <div class="col-md-6">
+            <div class="mb-4">
+                <h1 class="display-4 fw-bold" style="color: var(--primary-accent);">{{ movie.title }}</h1>
+                <div class="d-flex flex-wrap align-items-center gap-3 mt-3">
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <span class="badge fs-6" style="background: rgba(229, 9, 20, 0.2); color: var(--primary-accent);">{{ movie.certificate }}</span>
+                <span class="badge fs-6 ms-2" style="background: rgba(0, 168, 232, 0.2); color: var(--tertiary-accent);">{{ movie.language.name }}</span>
+                <span class="badge fs-6 ms-2" style="background: rgba(255, 193, 7, 0.2); color: #fbbf24;">
+                    <i class="fas fa-star me-1"></i>{{ movie.rating|floatformat:1 }}/10
+                </span>
+                <span class="badge fs-6 ms-2" style="background: rgba(139, 92, 246, 0.2); color: #c084fc;">
+                    <i class="far fa-clock me-1"></i>{{ movie.duration_formatted }}
+                </span>
+            </div>
+            
+            <p class="lead" style="color: rgba(255, 255, 255, 0.8);">{{ movie.description }}</p>
+            
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <h5 style="color: var(--text-white);"><i class="fas fa-user me-2" style="color: var(--primary-accent);"></i>Director</h5>
+                    <p style="color: rgba(255, 255, 255, 0.7);">{{ movie.director|default:"Not specified" }}</p>
+                    
+                    <h5 style="color: var(--text-white);"><i class="fas fa-users me-2" style="color: var(--primary-accent);"></i>Cast</h5>
+                    <p style="color: rgba(255, 255, 255, 0.7);">{{ movie.cast|default:"Not specified" }}</p>
+                </div>
+                
+                <div class="col-md-6">
+                    <h5 style="color: var(--text-white);"><i class="fas fa-tags me-2" style="color: var(--primary-accent);"></i>Genres</h5>
+                    <div class="mb-3">
+                        {% for genre in genres %}
+                        <span class="badge me-1 mb-1" style="background: rgba(229, 9, 20, 0.2); color: var(--primary-accent);">{{ genre.name }}</span>
+                        {% endfor %}
+                    </div>
+                    
+                    <h5 style="color: var(--text-white);"><i class="fas fa-calendar me-2" style="color: var(--primary-accent);"></i>Release Date</h5>
+                    <p style="color: rgba(255, 255, 255, 0.7);">{{ movie.release_date|date:"F d, Y" }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+        <div class="card border-0 shadow" style="background: var(--surface-light); border: 1px solid rgba(229, 9, 20, 0.1);">
+            <div class="card-header" style="background: var(--primary-accent); color: white;">
+                <h4 class="mb-0"><i class="fas fa-clock me-2"></i>Showtimes & Tickets</h4>
+            </div>
+            <div class="card-body" style="color: var(--text-white);">
+                {% if cities_with_showtimes %}
+                    {% for city_data in cities_with_showtimes %}
+                    <div class="mb-4">
+                        <h5 class="border-bottom pb-2" style="border-color: rgba(229, 9, 20, 0.2); color: var(--tertiary-accent);">
+                            <i class="fas fa-map-marker-alt me-2" style="color: var(--primary-accent);"></i>{{ city_data.city.name }}
+                        </h5>
+                        
+                        {% for theater_data in city_data.theaters %}
+                        <div class="card mb-3 border-0" style="background: var(--surface-dark); border: 1px solid rgba(229, 9, 20, 0.1) !important;">
+                            <div class="card-body">
+                                <h6 class="card-title fw-bold" style="color: var(--text-white);">
+                                    {{ theater_data.theater.name }}
+                                    <a href="https://www.google.com/maps/search/?api=1&query={{ theater_data.theater.name|urlencode }}+{{ theater_data.theater.address|urlencode }}" 
+                                       target="_blank" class="ms-2 text-decoration-none" style="color: var(--tertiary-accent);" title="View on Maps">
+                                        <i class="fas fa-map-marked-alt"></i>
+                                    </a>
+                                </h6>
+                                <p class="small mb-3" style="color: rgba(255, 255, 255, 0.7);">
+                                    <i class="fas fa-map-pin me-1" style="color: var(--primary-accent);"></i>{{ theater_data.theater.address }}
+                                    {% if theater_data.theater.contact_number %}
+                                    <br><i class="fas fa-phone me-1" style="color: var(--tertiary-accent);"></i>{{ theater_data.theater.contact_number }}
+                                    {% endif %}
+                                </p>
+                                
+                                <!-- <div class="facilities mb-3">
+                                    {% if theater_data.theater.has_parking %}
+                                    <span class="badge me-1" style="background: rgba(40, 167, 69, 0.2); color: #86efac;">Parking</span>
+                                    {% endif %}
+                                    {% if theater_data.theater.has_food_court %}
+                                    <span class="badge me-1" style="background: rgba(0, 168, 232, 0.2); color: #60d5ff;">Food Court</span>
+                                    {% endif %}
+                                    {% if theater_data.theater.has_wheelchair_access %}
+                                    <span class="badge me-1" style="background: rgba(255, 193, 7, 0.2); color: #fbbf24;">Wheelchair Access</span>
+                                    {% endif %}
+                                </div> -->
+                                
+                                <div class="showtimes">
+                                    <p class="mb-2" style="color: rgba(255, 255, 255, 0.8);"><strong>Available Shows:</strong></p>
+                                    <div class="d-flex flex-wrap gap-2">
+                                    {% for showtime in theater_data.showtimes %}
+                                    <a href="{% url 'select_seats' showtime.id %}" class="btn position-relative" style="background: rgba(229, 9, 20, 0.2); color: var(--text-white); border: 1px solid rgba(229, 9, 20, 0.3);">
+                                        {{ showtime.get_formatted_time }}
+                                        <br>
+                                        <small>{{ showtime.screen.screen_type }}</small>
+                                        <br>
+                                        <small class="fw-bold" style="color: var(--primary-accent);">₹{{ showtime.price }}</small>
+                                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill" style="background: var(--primary-accent);">
+                                            {{ showtime.available_seats }}
+                                            <span class="visually-hidden">seats available</span>
+                                        </span>
+                                    </a>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-calendar-times fa-4x text-muted mb-3"></i>
+                <h4>No showtimes available</h4>
+                <p class="text-muted">Check back later for showtimes in your city</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+
+
+    <!-- Recommendations Section -->
+    <!-- <div class="row mt-5">
+        <div class="col-12 mb-4">
+            <h3 class="fw-bold px-2 py-1 border-start border-primary border-4">You Might Also Like</h3>
+        </div>
+        {% for movie in recommended_movies %}
+        <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-4">
+            <div class="movie-card cursor-pointer position-relative hover-lift" onclick="window.location.href='{% url 'movie_detail' movie.slug %}';">
+                <div class="movie-card-img-container">
+                    {% if movie.poster %}
+                    <img src="{{ movie.poster.url }}" alt="{{ movie.title }}" class="movie-card-img">
+                    {% else %}
+                    <div class="movie-card-img d-flex align-items-center justify-content-center bg-secondary">
+                        <i class="fas fa-film fa-3x text-white"></i>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="movie-card-body">
+                    <h5 class="movie-card-title text-truncate mb-1" title="{{ movie.title }}">{{ movie.title }}</h5>
+                    <div class="movie-card-genre small text-muted">
+                        {% if movie.genres.exists %}
+                            {{ movie.genres.first.name }}
+                        {% else %}
+                            Action
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <p class="text-muted ps-3">No recommendations found.</p>
+        </div>
+        {% endfor %}
+    </div> -->
+
+    <!-- Recently Added Section -->
+    <!-- <div class="row mt-5 mb-5">
+        <div class="col-12 mb-4">
+            <h3 class="fw-bold px-2 py-1 border-start border-primary border-4">Recently Added</h3>
+        </div>
+        {% for movie in recently_added %}
+        <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-4">
+            <div class="movie-card cursor-pointer position-relative hover-lift" onclick="window.location.href='{% url 'movie_detail' movie.slug %}';">
+                <div class="movie-card-img-container">
+                    {% if movie.poster %}
+                    <img src="{{ movie.poster.url }}" alt="{{ movie.title }}" class="movie-card-img">
+                    {% else %}
+                    <div class="movie-card-img d-flex align-items-center justify-content-center bg-secondary">
+                        <i class="fas fa-film fa-3x text-white"></i>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="movie-card-body">
+                    <h5 class="movie-card-title text-truncate mb-1" title="{{ movie.title }}">{{ movie.title }}</h5>
+                    <div class="movie-card-genre small text-muted">
+                        {% if movie.genres.exists %}
+                            {{ movie.genres.first.name }}
+                        {% else %}
+                            Action
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <p class="text-muted ps-3">No recently added movies found.</p>
+        </div>
+        {% endfor %}    </div> -->
+
+    <!-- Back to Movies -->
+    <div class="mt-4 text-center">
+        <a href="{% url 'movie_list' %}" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Movies
+        </a>
+    </div>
+</div>
+
+<!-- YouTube Trailer Modal -->
+<div class="modal fade" id="trailerModal" tabindex="-1" aria-labelledby="trailerModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content bg-dark border-0">
+            <div class="modal-header border-0 bg-transparent">
+                <h5 class="modal-title text-white" id="trailerModalLabel">
+                    <i class="fab fa-youtube text-danger me-2"></i>{{ movie.title }} - Official Trailer
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div class="ratio ratio-16x9">
+                    <iframe 
+                        id="trailerIframe"
+                        src="" 
+                        title="YouTube video player" 
+                        frameborder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                        referrerpolicy="strict-origin-when-cross-origin" 
+                        allowfullscreen>
+                    </iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .trailer-thumbnail {
+        transition: all 0.3s ease;
+    }
+    
+    .trailer-thumbnail:hover {
+        transform: scale(1.02);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.3) !important;
+    }
+    
+    .play-button-overlay {
+        position: relative;
+        transition: transform 0.3s ease;
+    }
+    
+    .trailer-thumbnail:hover .play-button-overlay {
+        transform: scale(1.1);
+    }
+    
+    .play-icon-circle {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 0, 0, 0.7);
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 3px solid white;
+    }
+    
+    .cursor-pointer {
+        cursor: pointer;
+    }
+    
+    #trailerModal .modal-xl {
+        max-width: 90vw;
+    }
+    
+    #trailerModal .modal-content {
+        background: #000 !important;
+    }
+    
+    @media (max-width: 768px) {
+        #trailerModal .modal-xl {
+            max-width: 95vw;
+        }
+    }
+</style>
+
+<script>
+    function openTrailerModal(youtubeId) {
+        const iframe = document.getElementById('trailerIframe');
+        const modal = new bootstrap.Modal(document.getElementById('trailerModal'));
+        
+        // Set iframe src with autoplay parameter
+        iframe.src = `https://www.youtube.com/embed/${youtubeId}?autoplay=1&rel=0&modestbranding=1&playsinline=1`;
+        
+        // Show modal
+        modal.show();
+        
+        // Clear iframe when modal is closed (stops video)
+        document.getElementById('trailerModal').addEventListener('hidden.bs.modal', function () {
+            iframe.src = '';
+        });
+    }
+</script>
+
+{% endblock %}

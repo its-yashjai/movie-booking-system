@@ -1,0 +1,236 @@
+# Docker Compose file version
+# Defines which compose specification we are using
+version: '3.8'
+
+services:
+
+  #################################
+  # PostgreSQL Database Service
+  #################################
+  db:
+    # Official PostgreSQL image (lightweight Alpine version)
+    image: postgres:16-alpine
+
+    # Name of the container (easy to identify using `docker ps`)
+    container_name: moviebooking_db
+
+    # Environment variables used by PostgreSQL on startup
+    environment:
+      # Name of the database to create
+      POSTGRES_DB: moviebooking
+
+      # Database user
+      POSTGRES_USER: moviebooking_user
+
+      # Database password (change in real production)
+      POSTGRES_PASSWORD: moviebooking_password_change_this
+
+    # Expose PostgreSQL port to host machine
+    # Needed if you want to connect using pgAdmin / DBeaver
+    ports:
+      - "5432:5432"
+
+    # Volume to persist database data
+    # Without this, data will be lost when container stops
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+    # Healthcheck ensures DB is ready before other services start
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U moviebooking_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+
+  #################################
+  # Redis Service (Cache + Broker)
+  #################################
+  redis:
+    # Official Redis image
+    image: redis:7-alpine
+
+    # Container name
+    container_name: moviebooking_redis
+
+    # Expose Redis port (optional, useful for debugging)
+    ports:
+      - "6379:6379"
+
+    # Persist Redis data (important for some use cases)
+    volumes:
+      - redis_data:/data
+
+    # Healthcheck to ensure Redis is running
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+
+  #################################
+  # Django Web Application
+  #################################
+  web:
+    # Build Docker image from Dockerfile in current directory
+    build: .
+
+    # Name of the Django container
+    container_name: moviebooking_web
+
+    # Command executed when container starts
+    # 1. Apply database migrations
+    # 2. Collect static files
+    # 3. Start Gunicorn production server
+    command: >
+      sh -c "python manage.py migrate --settings=moviebooking.settings_production &&
+             python manage.py collectstatic --noinput --settings=moviebooking.settings_production &&
+             gunicorn moviebooking.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 120 --settings=moviebooking.settings_production"
+
+    # Expose Django app on port 8000
+    ports:
+      - "8000:8000"
+
+    # Environment variables used by Django
+    environment:
+      # Disable debug mode in production
+      DEBUG: "False"
+
+      # Django secret key (change in production)
+      SECRET_KEY: "django-insecure-change-me-in-production"
+
+      # Hosts allowed to access the app
+      ALLOWED_HOSTS: "localhost,127.0.0.1,0.0.0.0"
+
+      # Database connection string
+      DATABASE_URL: "postgresql://moviebooking_user:moviebooking_password_change_this@db:5432/moviebooking"
+
+      # Redis connection URL
+      REDIS_URL: "redis://redis:6379/0"
+
+      # Celery broker & backend (using Redis)
+      CELERY_BROKER_URL: "redis://redis:6379/0"
+      CELERY_RESULT_BACKEND: "redis://redis:6379/0"
+
+      # Email configuration (used for booking confirmation mails)
+      EMAIL_HOST: "smtp.gmail.com"
+      EMAIL_PORT: "587"
+      EMAIL_HOST_USER: "your-email@gmail.com"
+      EMAIL_HOST_PASSWORD: "your-app-password"
+
+      # Payment gateway credentials
+      RAZORPAY_KEY_ID: "your-key-id"
+      RAZORPAY_KEY_SECRET: "your-key-secret" 
+
+    # Mount volumes
+    volumes:
+      # Mount project code inside container
+      - .:/app
+
+      # Store collected static files
+      - static_volume:/app/staticfiles
+
+      # Store uploaded media files
+      - media_volume:/app/media
+
+    # Ensure DB and Redis are ready before starting Django
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+
+  #################################
+  # Celery Worker (Background Tasks)
+  #################################
+  worker:
+    # Use same Django image
+    build: .
+
+    # Container name
+    container_name: moviebooking_worker
+
+    # Start Celery worker
+    command: "celery -A moviebooking worker --loglevel=info"
+
+    # Environment variables (same as Django)
+    environment:
+      DEBUG: "False"
+      SECRET_KEY: "django-insecure-change-me-in-production"
+      ALLOWED_HOSTS: "localhost,127.0.0.1,0.0.0.0"
+      DATABASE_URL: "postgresql://moviebooking_user:moviebooking_password_change_this@db:5432/moviebooking"
+      REDIS_URL: "redis://redis:6379/0"
+      CELERY_BROKER_URL: "redis://redis:6379/0"
+      CELERY_RESULT_BACKEND: "redis://redis:6379/0"
+      EMAIL_HOST: "smtp.gmail.com"
+      EMAIL_PORT: "587"
+      EMAIL_HOST_USER: "your-email@gmail.com"
+      EMAIL_HOST_PASSWORD: "your-app-password"
+
+    # Start only after required services
+    depends_on:
+      - db
+      - redis
+      - web
+
+    # Mount project code
+    volumes:
+      - .:/app
+
+
+  #################################
+  # Celery Beat (Scheduled Tasks)
+  #################################
+  beat:
+    build: .
+    container_name: moviebooking_beat
+
+    # Start Celery Beat scheduler
+    command: "celery -A moviebooking beat --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler"
+
+    # Environment variables
+    environment:
+      DEBUG: "False"
+      SECRET_KEY: "django-insecure-change-me-in-production"
+      ALLOWED_HOSTS: "localhost,127.0.0.1,0.0.0.0"
+      DATABASE_URL: "postgresql://moviebooking_user:moviebooking_password_change_this@db:5432/moviebooking"
+      REDIS_URL: "redis://redis:6379/0"
+      CELERY_BROKER_URL: "redis://redis:6379/0"
+      CELERY_RESULT_BACKEND: "redis://redis:6379/0"
+
+    # Start after core services
+    depends_on:
+      - db
+      - redis
+      - web
+
+    volumes:
+      - .:/app
+
+
+#################################
+# Named Volumes
+#################################
+volumes:
+  # PostgreSQL persistent storage
+  postgres_data:
+
+  # Redis persistent storage
+  redis_data:
+
+  # Django static files
+  static_volume:
+
+  # Django media uploads
+  media_volume:
+
+
+#################################
+# Network Configuration
+#################################
+networks:
+  default:
+    # Custom Docker network name
+    name: moviebooking_network

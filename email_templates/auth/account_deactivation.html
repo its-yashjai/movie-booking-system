@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%); color: white; padding: 30px; border-radius: 8px 8px 0 0; }
+        .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px; }
+        .button { display: inline-block; background: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+        .info-box { background: #f3f3f3; padding: 15px; border-radius: 4px; margin: 20px 0; }
+        .footer { text-align: center; font-size: 12px; color: #666; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Account Deactivated</h1>
+        </div>
+        <div class="content">
+            <p>Hello {{ username }},</p>
+            
+            <p>Your BookMyshowClone account has been successfully deactivated.</p>
+            
+            <div class="info-box">
+                <p><strong>What happens next?</strong></p>
+                <ul>
+                    <li>Your account will be hidden from our platform</li>
+                    <li>Your data will be retained for 30 days</li>
+                    <li>You can reactivate your account anytime within 30 days</li>
+                </ul>
+            </div>
+            
+            <p><strong>Want to come back?</strong></p>
+            <p>You can reactivate your account anytime by clicking the button below:</p>
+            
+            <a href="{{ reactivate_link }}" class="button">Reactivate Account</a>
+            
+            <p>We'd love to have you back! If you have any feedback on why you're leaving, please let us know at <a href="mailto:support@bookmyshowclone.com">support@bookmyshowclone.com</a></p>
+            
+            <p>Best regards,<br>The BookMyshowClone Team</p>
+        </div>
+        <div class="footer">
+            <p>&copy; 2025 BookMyshowClone. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

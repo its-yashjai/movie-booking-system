@@ -1,0 +1,40 @@
+# Documentation - not needed in production
+*.md
+printable_docs/
+interview/
+
+# Development files
+.git/
+.gitignore
+.env.example
+*.sh
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+.coverage
+
+# Test files
+test_*.py
+tests/
+
+# Local database
+db.sqlite3
+db.sqlite3-shm
+db.sqlite3-wal
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# macOS
+.DS_Store
+
+# Celery local files
+celerybeat-schedule
+celerybeat-schedule.db
+
+# Redis dump
+dump.rdb

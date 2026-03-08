@@ -1,0 +1,484 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Booking Details - {{ booking.booking_number }} - BookMyshowClone{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Digital Ticket Card -->
+            <div class="ticket shadow-lg rounded-4 overflow-hidden mb-4" style="background: var(--surface-light); border: 1px solid rgba(229, 9, 20, 0.2);">
+                <div class="ticket-header p-4 text-white position-relative {% if booking.status == 'CONFIRMED' %}status-confirmed{% elif booking.status == 'PENDING' %}status-pending{% else %}status-failed{% endif %}">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="text-uppercase small mb-1 opacity-75">
+                                {% if booking.status == 'CONFIRMED' %}<i class="fas fa-check-circle me-2"></i>Booking Confirmation
+                                {% elif booking.status == 'PENDING' %}<i class="fas fa-hourglass-end me-2"></i>Payment Processing
+                                {% else %}<i class="fas fa-exclamation-circle me-2"></i>Booking Failed{% endif %}
+                            </p>
+                            <h2 class="h4 mb-0 fw-bold">{{ booking.booking_number }}</h2>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge {% if booking.status == 'CONFIRMED' %}bg-success{% elif booking.status == 'PENDING' %}bg-warning text-dark{% else %}bg-danger{% endif %} fs-6 px-3 py-2">
+                                <i class="fas {% if booking.status == 'CONFIRMED' %}fa-check-circle{% elif booking.status == 'PENDING' %}fa-clock{% else %}fa-exclamation-triangle{% endif %} me-2"></i>{{ booking.status }}
+                            </span>
+                        </div>
+                    </div>
+                    <!-- Decorative Semicircles -->
+                    <div class="decorative-cutout cutout-left"></div>
+                    <div class="decorative-cutout cutout-right"></div>
+                </div>
+
+                <div class="ticket-body p-4" style="background: var(--surface-light); color: var(--text-white);">
+                    <div class="row align-items-center mb-4">
+                        <div class="col-md-3 text-center mb-3 mb-md-0">
+                            {% if movie.poster %}
+                            <img src="{{ movie.poster.url }}" alt="{{ movie.title }}" class="img-fluid rounded shadow" style="max-height: 180px;">
+                            {% else %}
+                            <div class="rounded d-flex align-items-center justify-content-center mx-auto" style="width: 120px; height: 160px; background: rgba(0, 0, 0, 0.3); border: 2px dashed rgba(229, 9, 20, 0.3);">
+                                <i class="fas fa-film fa-2x" style="color: rgba(255, 255, 255, 0.4);"></i>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6" style="border-right: 2px dashed rgba(229, 9, 20, 0.2); padding-right: 20px;">
+                            <h3 class="h4 fw-bold" style="color: var(--text-white);">{{ movie.title }}</h3>
+                            <p class="mb-3" style="color: rgba(255, 255, 255, 0.7);"><i class="fas fa-language me-2" style="color: var(--tertiary-accent);"></i>{{ movie.language.name }} | <strong>{{ showtime.screen.screen_type }}</strong></p>
+                            
+                            <div class="row g-3">
+                                <div class="col-6">
+                                    <small style="color: rgba(255, 255, 255, 0.6); text-transform: uppercase; font-weight: 600;">Date</small>
+                                    <span class="fw-bold d-block" style="color: var(--text-white); font-size: 1.1rem;">{{ showtime.get_formatted_date }}</span>
+                                </div>
+                                <div class="col-6">
+                                    <small style="color: rgba(255, 255, 255, 0.6); text-transform: uppercase; font-weight: 600;">Time</small>
+                                    <span class="fw-bold d-block" style="color: var(--text-white); font-size: 1.1rem;">{{ showtime.get_formatted_time }}</span>
+                                </div>
+                                <div class="col-12">
+                                    <small style="color: rgba(255, 255, 255, 0.6); text-transform: uppercase; font-weight: 600;">Theater & Screen</small>
+                                    <span class="fw-bold d-block" style="color: var(--tertiary-accent); font-size: 1rem;">{{ showtime.screen.theater.name }}</span>
+                                    <p class="small mb-0" style="color: rgba(255, 255, 255, 0.6);">{{ showtime.screen.name }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            {% if booking.status == 'CONFIRMED' %}
+                            <i class="fas fa-check-circle fa-4x mb-2" style="color: #86efac;"></i>
+                            <p class="small mb-0 fw-bold" style="color: #86efac;">Booking Confirmed</p>
+                            {% elif booking.status == 'FAILED' %}
+                            <i class="fas fa-exclamation-triangle fa-4x mb-2" style="color: #f87171;"></i>
+                            <p class="small mb-0 fw-bold" style="color: #f87171;">Payment Failed</p>
+                            {% else %}
+                            <i class="fas fa-clock fa-4x mb-2" style="color: #fbbf24;"></i>
+                            <p class="small mb-0 fw-bold" style="color: #fbbf24;">Processing</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="p-3 rounded-3 mb-4" style="background: rgba(229, 9, 20, 0.1); border: 1px solid rgba(229, 9, 20, 0.2);">
+                        <div class="d-flex justify-content-between align-items-center flex-wrap">
+                            <div>
+                                <small style="color: rgba(255, 255, 255, 0.6); text-transform: uppercase; font-weight: 600; display: block;">Your Seats</small>
+                                <div class="d-flex gap-2 mt-2 flex-wrap">
+                                    {% for seat in booking.seats %}
+                                    <span class="fs-5 fw-bold px-3 py-2 rounded" style="background: var(--primary-accent); color: white;">{{ seat }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div class="text-end mt-3 mt-md-0">
+                                <small style="color: rgba(255, 255, 255, 0.6); text-transform: uppercase; font-weight: 600; display: block;">
+                                    {% if booking.status == 'FAILED' %}Amount to be Paid{% else %}Total Paid{% endif %}
+                                </small>
+                                <span class="fs-4 fw-bold booking-total-amount">₹{{ booking.total_amount }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if booking.status == 'FAILED' %}
+                    <div class="p-3 rounded-3 mb-4" style="background: rgba(220, 53, 69, 0.15); border: 1px solid rgba(220, 53, 69, 0.3);" role="alert">
+                        <div class="d-flex align-items-start">
+                            <i class="fas fa-exclamation-triangle fa-2x me-3" style="color: #f87171; flex-shrink: 0;"></i>
+                            <div>
+                                <h5 class="mb-2 fw-bold" style="color: #f87171;">Booking Failed</h5>
+                                <p class="mb-0" style="color: rgba(255, 255, 255, 0.7);">Your payment could not be processed. Please try booking again or contact support if the issue persists.</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div style="color: rgba(255, 255, 255, 0.7); border-top: 1px solid rgba(229, 9, 20, 0.2); padding-top: 1.5rem;">
+                        <div class="row text-center text-md-start">
+                            <!-- <div class="col-md-6 mb-2">
+                                <i class="fas fa-info-circle me-2" style="color: var(--tertiary-accent);"></i><strong>Note:</strong> Please arrive 15 mins early.
+                            </div> -->
+                            <!-- <div class="col-md-6 text-md-end">
+                                <i class="fas fa-envelope me-2" style="color: var(--primary-accent);"></i><strong>Support:</strong> support@bookmyshowclone.com
+                            </div> -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-grid gap-3 d-md-flex justify-content-md-center">
+                {% if booking.status != 'FAILED' %}
+                <!-- <button class="btn shadow-sm px-4" onclick="window.print()" style="background: transparent; border: 2px solid var(--primary-accent); color: var(--primary-accent); font-weight: 600;">
+                    <i class="fas fa-print me-2"></i>Print Ticket
+                </button> -->
+                {% endif %}
+                <a href="{% url 'my_bookings' %}" class="btn shadow-sm px-4" style="background: linear-gradient(135deg, var(--primary-accent) 0%, #cc0812 100%); color: white; font-weight: 600; border: none;">
+                    <i class="fas fa-arrow-left me-2"></i>Back to My Bookings
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- End of booking details section --><style>
+    :root {
+        --primary-accent: #E50914;
+        --tertiary-accent: #00A8E8;
+        --surface-light: #2a2a2a;
+        --text-white: #ffffff;
+    }
+
+    .ticket { position: relative; }
+    
+    /* Ticket header status colors */
+    .ticket-header.status-confirmed {
+        background: linear-gradient(135deg, var(--primary-accent) 0%, #cc0812 100%);
+    }
+    
+    .ticket-header.status-pending {
+        background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+    }
+    
+    .ticket-header.status-failed {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    }
+    
+    /* Booking total amount color */
+    .booking-total-amount {
+        color: #86efac !important;
+    }
+    
+    .status-failed .booking-total-amount {
+        color: #f87171 !important;
+    }
+    
+    @media (max-width: 767.98px) { 
+        .border-end-dashed { 
+            border-right: none; 
+            border-bottom: 2px dashed rgba(229, 9, 20, 0.2); 
+            padding-bottom: 20px; 
+            margin-bottom: 20px; 
+        } 
+    }
+    
+    .decorative-cutout {
+        position: absolute;
+        bottom: -15px;
+        width: 30px;
+        height: 30px;
+        background: var(--surface-light);
+        border-radius: 50%;
+        z-index: 2;
+    }
+    .cutout-left { left: -15px; }
+    .cutout-right { right: -15px; }
+    
+    /* QR Display Container */
+    .qr-display-container {
+        background: linear-gradient(145deg, var(--surface-light) 0%, rgba(0, 0, 0, 0.5) 100%);
+        padding: 10px;
+        border-radius: 12px;
+        display: inline-block;
+        border: 2px solid var(--primary-accent);
+        box-shadow: 0 4px 15px rgba(229, 9, 20, 0.3);
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+    
+    .qr-code-large {
+        width: 100px;
+        height: 100px;
+        border: 2px solid var(--primary-accent);
+        border-radius: 8px;
+        background: white;
+        padding: 4px;
+        box-shadow: 0 2px 8px rgba(229, 9, 20, 0.3);
+        transition: all 0.3s ease;
+        display: block;
+        max-width: 100%;
+        object-fit: contain;
+    }
+    
+    .qr-code-clickable {
+        cursor: pointer;
+    }
+    
+    .qr-code-clickable:hover {
+        transform: scale(1.05) !important;
+        box-shadow: 0 4px 12px rgba(229, 9, 20, 0.6) !important;
+    }
+    
+    /* Modal QR Styles */
+    .qr-modal-display-container {
+        background: linear-gradient(145deg, var(--surface-light) 0%, rgba(0, 0, 0, 0.5) 100%);
+        padding: 20px;
+        border-radius: 15px;
+        display: inline-block;
+    }
+    
+    .qr-modal-large {
+        max-width: 300px;
+        width: 100%;
+        height: auto;
+        border: 3px solid var(--primary-accent);
+        border-radius: 15px;
+        background: white;
+        padding: 10px;
+        box-shadow: 0 8px 25px rgba(229, 9, 20, 0.4);
+    }
+    
+    @media (max-width: 767.98px) {
+        .qr-display-container {
+            padding: 8px;
+            max-width: 90px;
+        }
+        
+        .qr-code-large {
+            width: 80px;
+            height: 80px;
+            padding: 3px;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .qr-display-container {
+            padding: 6px;
+            max-width: 70px;
+        }
+        
+        .qr-code-large {
+            width: 60px;
+            height: 60px;
+            padding: 2px;
+        }
+    }
+    
+    @media print {
+        .navbar, .btn, .cutout-left, .cutout-right { display: none !important; }
+        .container { padding: 0 !important; margin: 0 !important; width: 100% !important; max-width: none !important; }
+        .ticket { border: 1px solid rgba(229, 9, 20, 0.3); box-shadow: none !important; }
+        .ticket-body { background: var(--surface-light) !important; color: var(--text-white) !important; }
+        .qr-code-large { 
+            border: 2px solid var(--primary-accent); 
+            box-shadow: none; 
+            background: white; 
+        }
+    }
+</style>
+
+<script>
+// Download QR Code function for booking detail
+function downloadTicketQR(bookingNumber) {
+    const qrImage = document.getElementById('ticketQR');
+    if (!qrImage) return;
+    
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    const img = new Image();
+    img.onload = function() {
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0);
+        
+        canvas.toBlob(function(blob) {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `ticket_${bookingNumber}_qr.png`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        });
+    };
+    img.src = qrImage.src;
+}
+
+// Share QR Code function for booking detail
+function shareTicketQR(movieTitle, bookingNumber) {
+    const qrImage = document.getElementById('ticketQR');
+    if (!qrImage) return;
+    
+    if (navigator.share) {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
+        
+        img.onload = function() {
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0);
+            
+            canvas.toBlob(async function(blob) {
+                const file = new File([blob], `ticket_${bookingNumber}_qr.png`, { type: 'image/png' });
+                
+                try {
+                    await navigator.share({
+                        title: `Movie Ticket - ${movieTitle}`,
+                        text: `My movie ticket for ${movieTitle} (${bookingNumber})`,
+                        files: [file]
+                    });
+                } catch (err) {
+                    console.log('Error sharing:', err);
+                    fallbackShareTicket(movieTitle, bookingNumber);
+                }
+            });
+        };
+        img.src = qrImage.src;
+    } else {
+        fallbackShareTicket(movieTitle, bookingNumber);
+    }
+}
+
+// Fallback share function for booking detail
+function fallbackShareTicket(movieTitle, bookingNumber) {
+    const shareText = `Check out my movie ticket for ${movieTitle}! Booking: ${bookingNumber}`;
+    
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(shareText).then(() => {
+            alert('Booking details copied to clipboard!');
+        });
+    } else {
+        const textArea = document.createElement('textarea');
+        textArea.value = shareText;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        alert('Booking details copied to clipboard!');
+    }
+}
+
+// Modal QR Code functions
+function downloadModalQR(bookingNumber) {
+    const qrImage = document.getElementById('modalQRImage');
+    if (!qrImage) return;
+    
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    const img = new Image();
+    img.onload = function() {
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0);
+        
+        canvas.toBlob(function(blob) {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `ticket_${bookingNumber}_qr.png`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        });
+    };
+    img.src = qrImage.src;
+}
+
+function shareModalQR(movieTitle, bookingNumber) {
+    const qrImage = document.getElementById('modalQRImage');
+    if (!qrImage) return;
+    
+    if (navigator.share) {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
+        
+        img.onload = function() {
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0);
+            
+            canvas.toBlob(async function(blob) {
+                const file = new File([blob], `ticket_${bookingNumber}_qr.png`, { type: 'image/png' });
+                
+                try {
+                    await navigator.share({
+                        title: `Movie Ticket - ${movieTitle}`,
+                        text: `My movie ticket for ${movieTitle} (${bookingNumber})`,
+                        files: [file]
+                    });
+                } catch (err) {
+                    console.log('Error sharing:', err);
+                    fallbackShareTicket(movieTitle, bookingNumber);
+                }
+            });
+        };
+        img.src = qrImage.src;
+    } else {
+        fallbackShareTicket(movieTitle, bookingNumber);
+    }
+}
+
+function printModalQR() {
+    const qrImage = document.getElementById('modalQRImage');
+    if (!qrImage) return;
+    
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+        <html>
+        <head>
+            <title>Movie Ticket QR Code</title>
+            <style>
+                body { 
+                    font-family: Arial, sans-serif; 
+                    text-align: center; 
+                    padding: 20px; 
+                }
+                .qr-container { 
+                    border: 2px solid #28a745; 
+                    border-radius: 15px; 
+                    padding: 20px; 
+                    display: inline-block; 
+                    background: white;
+                }
+                .qr-image { 
+                    max-width: 400px; 
+                    width: 100%; 
+                }
+                .booking-info { 
+                    margin-top: 20px; 
+                    font-size: 14px; 
+                    color: #666; 
+                }
+            </style>
+        </head>
+        <body>
+            <h2>Movie Ticket</h2>
+            <div class="qr-container">
+                <img src="${qrImage.src}" alt="QR Code" class="qr-image">
+                <div class="booking-info">
+                    <p><strong>Show this QR code at the theater entrance</strong></p>
+                    <p>BookMyshowClone System</p>
+                </div>
+            </div>
+        </body>
+        </html>
+    `);
+    
+    printWindow.document.close();
+    
+    printWindow.onload = function() {
+        setTimeout(() => {
+            printWindow.print();
+            printWindow.close();
+        }, 250);
+    };
+}
+</script>
+{% endblock %}

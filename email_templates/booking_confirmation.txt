@@ -1,0 +1,32 @@
+🎬 BOOKING CONFIRMED - BookMyshowClone
+
+Hello {{ user.get_full_name|default:user.username }},
+
+Your booking has been confirmed successfully!
+
+========================================
+BOOKING DETAILS
+========================================
+
+Booking ID: {{ booking.booking_number }}
+Movie: {{ movie.title }}
+Date: {{ showtime.get_formatted_date }}
+Time: {{ showtime.get_formatted_time }}
+Theater: {{ theater.name }}
+Screen: {{ showtime.screen.name }}
+Seats: {{ booking.get_seats_display }}
+
+Total Paid: ₹{{ total_amount }}
+
+========================================
+
+✓ Arrive 15 minutes before showtime
+✓ Show QR code at theater entrance
+✓ Find ticket in "My Bookings" section
+
+Enjoy your movie! �
+
+BookMyshowClone
+support@bookmyshowclone.com
+
+© 2026 BookMyshowClone. Automated email - do not reply.

@@ -1,0 +1,91 @@
+{% extends 'base/base.html' %}
+
+{% block title %}BookMyshowClone | Book Movie Tickets Online{% endblock %}
+
+{% block hero_section %}
+    {% include 'movies/partials/hero.html' %}
+{% endblock %}
+
+{% block content %}
+    <!-- Quick Actions Bar -->
+    {% include 'movies/partials/quick_actions.html' %}
+
+    <!-- Featured Movies -->
+    {% include 'movies/partials/featured_movies.html' %}
+
+    <!-- Now Showing -->
+    {% include 'movies/partials/now_showing.html' %}
+
+    <!-- Genres -->
+    {% include 'movies/partials/genres.html' %}
+
+    <!-- Special Offers -->
+    <!-- {% include 'movies/partials/offers.html' %} -->
+
+    <!-- Newsletter -->
+    {% include 'movies/partials/newsletter.html' %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // Autocomplete Logic for Home Page
+    let searchTimeout;
+    const mainSearchInput = document.getElementById('mainSearchInput');
+    const mainAutocompleteResults = document.getElementById('mainAutocompleteResults');
+    
+    if (mainSearchInput) {
+        mainSearchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            const query = this.value.trim();
+            
+            if (query.length < 2) {
+                mainAutocompleteResults.style.display = 'none';
+                return;
+            }
+            
+            searchTimeout = setTimeout(async () => {
+                try {
+                    mainAutocompleteResults.innerHTML = '<div class="text-center py-3"><div class="spinner-border spinner-border-sm text-primary"></div></div>';
+                    mainAutocompleteResults.style.display = 'block';
+                    
+                    const response = await fetch(`/autocomplete/?q=${encodeURIComponent(query)}`);
+                    const data = await response.json();
+                    
+                    if (data.results && data.results.length > 0) {
+                        mainAutocompleteResults.innerHTML = data.results.map(movie => `
+                            <div class="autocomplete-item" onclick="window.location.href='${movie.url}'">
+                                <img src="${movie.poster_url || '/static/default-poster.jpg'}" class="autocomplete-poster">
+                                <div class="autocomplete-info">
+                                    <div class="autocomplete-title">${movie.title}</div>
+                                    <div class="text-muted small">${movie.year} • <i class="fas fa-star text-warning"></i> ${movie.rating}</div>
+                                </div>
+                            </div>
+                        `).join('');
+                    } else {
+                        mainAutocompleteResults.innerHTML = '<div class="text-center py-3 text-muted small">No movies found</div>';
+                    }
+                } catch (error) {
+                    mainAutocompleteResults.style.display = 'none';
+                }
+            }, 300);
+        });
+    }
+
+    // Close autocomplete when clicking outside
+    document.addEventListener('click', function(e) {
+        if (mainAutocompleteResults && !mainAutocompleteResults.contains(e.target) && e.target !== mainSearchInput) {
+            mainAutocompleteResults.style.display = 'none';
+        }
+    });
+    
+    // Add hover effects to genre cards
+    document.querySelectorAll('.hover-lift').forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+        });
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+</script>
+{% endblock %}

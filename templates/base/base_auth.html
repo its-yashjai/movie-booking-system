@@ -1,0 +1,32 @@
+{% extends 'base/base.html' %}
+
+{% block content %}
+<div class="auth-wrapper py-5">
+    <div class="row justify-content-center">
+        <div class="col-12">
+            <div class="auth-container">
+                <!-- Header Section -->
+                <div class="auth-header">
+                    <i class="fas fa-film movie-icon"></i>
+                    <h2>{% block page_title %}BookMyshowClone{% endblock %}</h2>
+                    <p class="mb-0">{% block page_subtitle %}Book Your Movie Tickets{% endblock %}</p>
+                </div>
+                
+                <!-- Body Section -->
+                <div class="auth-body">
+                    {% block auth_content %}
+                    <!-- Page-specific content goes here -->
+                    {% endblock %}
+                    
+                    <!-- Navigation Links -->
+                    <div class="nav-links">
+                        {% block nav_links %}
+                        <!-- Page-specific navigation links -->
+                        {% endblock %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

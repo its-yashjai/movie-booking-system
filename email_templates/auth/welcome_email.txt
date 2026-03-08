@@ -1,0 +1,21 @@
+Welcome to MovieBooking!
+
+Hello {{ username }},
+
+Thank you for joining MovieBooking! 🎬
+
+Your account has been successfully created. You can now:
+✅ Browse movies and showtimes
+✅ Book your favorite seats
+
+Account Details:
+- Username: {{ user.username }}
+- Email: {{ user.email }}
+- Joined: {{ signup_date|date:"F d, Y" }}
+
+To get started, visit our website: {{ site_url }}
+
+If you didn't create this account, please ignore this email.
+
+Best regards,
+The MovieBooking Team

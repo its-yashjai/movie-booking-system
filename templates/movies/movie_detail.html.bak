@@ -1,0 +1,538 @@
+{% extends 'base/base.html' %}
+
+{% block title %}{{ movie.title }} - MovieBooking{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Movie Header -->
+    <div class="row mb-5">
+        <div class="col-md-4">
+            {% if movie.poster %}
+            <img src="{{ movie.poster.url }}" class="img-fluid rounded shadow" alt="{{ movie.title }}">
+            {% else %}
+            <div class="bg-dark text-white rounded shadow d-flex align-items-center justify-content-center" style="height: 400px;">
+                <i class="fas fa-film fa-5x"></i>
+            </div>
+            {% endif %}
+            
+            {% if movie.trailer_url and movie.youtube_id %}
+            <div class="mt-4">
+                <h5 class="mb-3"><i class="fab fa-youtube text-danger me-2"></i>Official Trailer</h5>
+                <div class="ratio ratio-16x9 shadow rounded overflow-hidden position-relative cursor-pointer trailer-thumbnail" 
+                     onclick="openTrailerModal('{{ movie.youtube_id }}')"
+                     style="background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://img.youtube.com/vi/{{ movie.youtube_id }}/maxresdefault.jpg'); background-size: cover; background-position: center;">
+                    <div class="d-flex align-items-center justify-content-center">
+                        <div class="play-button-overlay">
+                            <i class="fab fa-youtube" style="font-size: 80px; color: #FF0000;"></i>
+                            <div class="play-icon-circle">
+                                <i class="fas fa-play" style="font-size: 30px; color: white; margin-left: 5px;"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="position-absolute bottom-0 start-0 p-3 text-white">
+                        <small><i class="fas fa-video me-1"></i>Click to watch trailer</small>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="col-md-8">
+            <div class="mb-4">
+                <h1 class="display-4 fw-bold">{{ movie.title }}</h1>
+                <div class="d-flex flex-wrap align-items-center gap-3 mt-3">
+                    <!-- Interest Button -->
+                    <button class="btn px-4 py-2 rounded-pill shadow-sm d-flex align-items-center gap-2 interest-btn {% if is_interested %}btn-success{% else %}btn-outline-success{% endif %}" 
+                            onclick="toggleInterest(this, '{{ movie.id }}')"
+                            style="transition: all 0.3s ease;">
+                        <i class="{% if is_interested %}fas{% else %}far{% endif %} fa-thumbs-up fs-5"></i>
+                        <span class="fw-bold">{% if is_interested %}Interested{% else %}Interested?{% endif %}</span>
+                    </button>
+
+                    <!-- Wishlist Button -->
+                    <button class="btn px-4 py-2 rounded-pill shadow-sm d-flex align-items-center gap-2 wishlist-btn {% if in_wishlist %}btn-danger text-white{% else %}btn-outline-danger{% endif %}" 
+                            onclick="toggleWishlist(this, '{{ movie.id }}')"
+                            style="transition: all 0.3s ease;">
+                        <i class="{% if in_wishlist %}fas{% else %}far{% endif %} fa-heart fs-5"></i>
+                        <span class="fw-bold">{% if in_wishlist %}In Watchlist{% else %}Watch Later{% endif %}</span>
+                    </button>
+
+                    <div class="d-flex align-items-center ms-lg-2 bg-light px-3 py-2 rounded-pill border">
+                        <div class="bg-success bg-opacity-10 text-success p-2 rounded-circle me-2 d-flex align-items-center justify-content-center" style="width: 35px; height: 35px;">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <span class="fw-bold text-dark me-1 interest-count-{{ movie.id }}">{{ movie.interest_count }}</span>
+                        <span class="text-muted small">Interested</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <span class="badge bg-primary fs-6">{{ movie.certificate }}</span>
+                <span class="badge bg-info fs-6 ms-2">{{ movie.language.name }}</span>
+                <span class="badge bg-warning text-dark fs-6 ms-2">
+                    <i class="fas fa-star me-1"></i>{{ movie.rating|floatformat:1 }}/10
+                </span>
+                <span class="badge bg-secondary fs-6 ms-2">
+                    <i class="far fa-clock me-1"></i>{{ movie.duration_formatted }}
+                </span>
+            </div>
+            
+            <p class="lead">{{ movie.description }}</p>
+            
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <h5><i class="fas fa-user me-2"></i>Director</h5>
+                    <p>{{ movie.director|default:"Not specified" }}</p>
+                    
+                    <h5><i class="fas fa-users me-2"></i>Cast</h5>
+                    <p>{{ movie.cast|default:"Not specified" }}</p>
+                </div>
+                
+                <div class="col-md-6">
+                    <h5><i class="fas fa-tags me-2"></i>Genres</h5>
+                    <div class="mb-3">
+                        {% for genre in genres %}
+                        <span class="badge bg-primary me-1 mb-1">{{ genre.name }}</span>
+                        {% endfor %}
+                    </div>
+                    
+                    <h5><i class="fas fa-calendar me-2"></i>Release Date</h5>
+                    <p>{{ movie.release_date|date:"F d, Y" }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Showtimes Section -->
+    <div class="card border-0 shadow">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0"><i class="fas fa-clock me-2"></i>Showtimes & Tickets</h4>
+        </div>
+        <div class="card-body">
+            {% if cities_with_showtimes %}
+                {% for city_data in cities_with_showtimes %}
+                <div class="mb-4">
+                    <h5 class="border-bottom pb-2">
+                        <i class="fas fa-map-marker-alt text-danger me-2"></i>{{ city_data.city.name }}
+                    </h5>
+                    
+                    {% for theater_data in city_data.theaters %}
+                    <div class="card mb-3 border">
+                        <div class="card-body">
+                            <h6 class="card-title fw-bold">
+                                {{ theater_data.theater.name }}
+                                <a href="https://www.google.com/maps/search/?api=1&query={{ theater_data.theater.name|urlencode }}+{{ theater_data.theater.address|urlencode }}" 
+                                   target="_blank" class="ms-2 text-primary small text-decoration-none" title="View on Maps">
+                                    <i class="fas fa-map-marked-alt"></i>
+                                </a>
+                            </h6>
+                            <p class="text-muted small mb-3">
+                                <i class="fas fa-map-pin me-1 text-danger"></i>{{ theater_data.theater.address }}
+                                {% if theater_data.theater.contact_number %}
+                                <br><i class="fas fa-phone me-1 text-success"></i>{{ theater_data.theater.contact_number }}
+                                {% endif %}
+                            </p>
+                            
+                            <div class="facilities mb-3">
+                                {% if theater_data.theater.has_parking %}
+                                <span class="badge bg-success me-1">Parking</span>
+                                {% endif %}
+                                {% if theater_data.theater.has_food_court %}
+                                <span class="badge bg-info me-1">Food Court</span>
+                                {% endif %}
+                                {% if theater_data.theater.has_wheelchair_access %}
+                                <span class="badge bg-warning me-1">Wheelchair Access</span>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="showtimes">
+                                <p class="mb-2"><strong>Available Shows:</strong></p>
+                                <div class="d-flex flex-wrap gap-2">
+                                    {% for showtime in theater_data.showtimes %}
+                                    <a href="{% url 'select_seats' showtime.id %}" class="btn btn-outline-primary position-relative">
+                                        {{ showtime.get_formatted_time }}
+                                        <br>
+                                        <small>{{ showtime.screen.screen_type }}</small>
+                                        <br>
+                                        <small class="fw-bold">₹{{ showtime.price }}</small>
+                                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                            {{ showtime.available_seats }}
+                                            <span class="visually-hidden">seats available</span>
+                                        </span>
+                                    </a>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-calendar-times fa-4x text-muted mb-3"></i>
+                <h4>No showtimes available</h4>
+                <p class="text-muted">Check back later for showtimes in your city</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- User Reviews Section -->
+    <div class="row mt-5">
+        <div class="col-md-8">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="mb-0"><i class="fas fa-comments me-2"></i>User Reviews</h3>
+                {% if user.is_authenticated and not user_review %}
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addReviewModal">
+                    <i class="fas fa-plus me-2"></i>Write a Review
+                </button>
+                {% endif %}
+            </div>
+
+            {% if user_review %}
+            <div class="card border-primary mb-4 shadow-sm">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <span class="fw-bold">Your Review</span>
+                    <button class="btn btn-sm btn-light" data-bs-toggle="modal" data-bs-target="#addReviewModal">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <h5 class="card-title mb-0">{{ user_review.title }}</h5>
+                        <span class="badge bg-warning text-dark">
+                            <i class="fas fa-star me-1"></i>{{ user_review.rating }}/10
+                        </span>
+                    </div>
+                    <p class="card-text">{{ user_review.content }}</p>
+                    <small class="text-muted">Posted on {{ user_review.created_at|date:"F d, Y" }}</small>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if reviews %}
+                {% for review in reviews %}
+                {% if review.user != user %}
+                <div class="card mb-3 border-0 shadow-sm review-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
+                                    {{ review.user.username|first|upper }}
+                                </div>
+                                <div>
+                                    <h6 class="mb-0 fw-bold">{{ review.user.username }}</h6>
+                                    <small class="text-muted">{{ review.created_at|timesince }} ago</small>
+                                </div>
+                            </div>
+                            <span class="badge bg-warning text-dark">
+                                <i class="fas fa-star me-1"></i>{{ review.rating }}/10
+                            </span>
+                        </div>
+                        <h5 class="card-title">{{ review.title }}</h5>
+                        <p class="card-text">{{ review.content }}</p>
+                        
+                        <!-- Review Actions (Likes) -->
+                        <div class="d-flex align-items-center mt-3 pt-3 border-top">
+                            <button class="btn btn-sm btn-outline-secondary me-3 review-like-btn" 
+                                    onclick="likeReview('{{ review.id }}', true, this)">
+                                <i class="far fa-thumbs-up me-1"></i> 
+                                <span class="likes-count">{{ review.likes }}</span>
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary review-dislike-btn" 
+                                    onclick="likeReview('{{ review.id }}', false, this)">
+                                <i class="far fa-thumbs-down me-1"></i> 
+                                <span class="dislikes-count">{{ review.dislikes }}</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+            {% else %}
+                {% if not user_review %}
+                <div class="text-center py-5 bg-light rounded">
+                    <i class="far fa-comment-dots fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">No reviews yet. Be the first to share your experience!</p>
+                </div>
+                {% endif %}
+            {% endif %}
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Movie Rating</h5>
+                    <div class="text-center">
+                        <h1 class="display-3 fw-bold text-primary mb-0">{{ movie.rating|floatformat:1 }}</h1>
+                        <div class="text-warning mb-2">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star-half-alt"></i>
+                        </div>
+                        <p class="text-muted small">Based on {{ movie.rating_count }} reviews</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Review Modal -->
+    <div class="modal fade" id="addReviewModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form action="{% url 'add_review' movie.id %}" method="POST">
+                    {% csrf_token %}
+                    <div class="modal-header">
+                        <h5 class="modal-title">Write a Review</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Your Rating (1-10)</label>
+                            <input type="range" name="rating" class="form-range" min="1" max="10" step="1" 
+                                   value="{{ user_review.rating|default:8 }}" oninput="this.nextElementSibling.value = this.value">
+                            <output class="fw-bold text-primary">{{ user_review.rating|default:8 }}</output>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Review Headline</label>
+                            <input type="text" name="title" class="form-control" placeholder="Summarize your experience" 
+                                   value="{{ user_review.title|default:'' }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Review Details</label>
+                            <textarea name="content" class="form-control" rows="4" placeholder="What did you like or dislike?" 
+                                      required>{{ user_review.content|default:'' }}</textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Submit Review</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recommendations Section -->
+    <div class="row mt-5">
+        <div class="col-12 mb-4">
+            <h3 class="fw-bold px-2 py-1 border-start border-primary border-4">You Might Also Like</h3>
+        </div>
+        {% for movie in recommended_movies %}
+        <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-4">
+            <div class="movie-card cursor-pointer position-relative hover-lift" onclick="window.location.href='{% url 'movie_detail' movie.slug %}';">
+                <!-- Wishlist Heart Icon Badge (Top Right) -->
+                <div class="position-absolute top-0 end-0 m-2 d-flex flex-column align-items-center" style="z-index: 10;">
+                    <button class="btn btn-icon rounded-circle bg-white shadow-sm border-0 wishlist-toggle-btn position-relative" 
+                            onclick="event.stopPropagation(); toggleWishlist(this, '{{ movie.id }}');" 
+                            title="Watch Later"
+                            style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                        <i class="{% if movie.id in user_wishlist %}fas text-danger{% else %}far text-muted{% endif %} fa-heart" style="font-size: 1.1rem;"></i>
+                        {% if movie.id in user_wishlist %}
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" 
+                              style="font-size: 0.6rem; padding: 2px 5px;">
+                            <i class="fas fa-check"></i>
+                        </span>
+                        {% endif %}
+                    </button>
+                </div>
+
+                <div class="movie-card-img-container">
+                    {% if movie.poster %}
+                    <img src="{{ movie.poster.url }}" alt="{{ movie.title }}" class="movie-card-img">
+                    {% else %}
+                    <div class="movie-card-img d-flex align-items-center justify-content-center bg-secondary">
+                        <i class="fas fa-film fa-3x text-white"></i>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="movie-card-body">
+                    <div class="text-muted small mb-1">
+                        <i class="fas fa-users text-primary me-1" style="font-size: 0.8rem;"></i>
+                        <span class="interest-count-{{ movie.id }}">{{ movie.interest_count }}</span> Interested
+                    </div>
+                    <h5 class="movie-card-title text-truncate mb-1" title="{{ movie.title }}">{{ movie.title }}</h5>
+                    <div class="movie-card-genre small text-muted">
+                        {% if movie.genres.exists %}
+                            {{ movie.genres.first.name }}
+                        {% else %}
+                            Action
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <p class="text-muted ps-3">No recommendations found.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Recently Added Section -->
+    <div class="row mt-5 mb-5">
+        <div class="col-12 mb-4">
+            <h3 class="fw-bold px-2 py-1 border-start border-primary border-4">Recently Added</h3>
+        </div>
+        {% for movie in recently_added %}
+        <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-4">
+            <div class="movie-card cursor-pointer position-relative hover-lift" onclick="window.location.href='{% url 'movie_detail' movie.slug %}';">
+                <!-- Wishlist Heart Icon Badge (Top Right) -->
+                <div class="position-absolute top-0 end-0 m-2 d-flex flex-column align-items-center" style="z-index: 10;">
+                    <button class="btn btn-icon rounded-circle bg-white shadow-sm border-0 wishlist-toggle-btn position-relative" 
+                            onclick="event.stopPropagation(); toggleWishlist(this, '{{ movie.id }}');" 
+                            title="Watch Later"
+                            style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                        <i class="{% if movie.id in user_wishlist %}fas text-danger{% else %}far text-muted{% endif %} fa-heart" style="font-size: 1.1rem;"></i>
+                        {% if movie.id in user_wishlist %}
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" 
+                              style="font-size: 0.6rem; padding: 2px 5px;">
+                            <i class="fas fa-check"></i>
+                        </span>
+                        {% endif %}
+                    </button>
+                </div>
+
+                <div class="movie-card-img-container">
+                    {% if movie.poster %}
+                    <img src="{{ movie.poster.url }}" alt="{{ movie.title }}" class="movie-card-img">
+                    {% else %}
+                    <div class="movie-card-img d-flex align-items-center justify-content-center bg-secondary">
+                        <i class="fas fa-film fa-3x text-white"></i>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="movie-card-body">
+                    <div class="text-muted small mb-1">
+                        <i class="fas fa-users text-primary me-1" style="font-size: 0.8rem;"></i>
+                        <span class="interest-count-{{ movie.id }}">{{ movie.interest_count }}</span> Interested
+                    </div>
+                    <h5 class="movie-card-title text-truncate mb-1" title="{{ movie.title }}">{{ movie.title }}</h5>
+                    <div class="movie-card-genre small text-muted">
+                        {% if movie.genres.exists %}
+                            {{ movie.genres.first.name }}
+                        {% else %}
+                            Action
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <p class="text-muted ps-3">No recently added movies found.</p>
+        </div>
+        {% endfor %}    </div>
+
+    <!-- Back to Movies -->
+    <div class="mt-4 text-center">
+        <a href="{% url 'movie_list' %}" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Movies
+        </a>
+    </div>
+</div>
+
+<!-- YouTube Trailer Modal -->
+<div class="modal fade" id="trailerModal" tabindex="-1" aria-labelledby="trailerModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content bg-dark border-0">
+            <div class="modal-header border-0 bg-transparent">
+                <h5 class="modal-title text-white" id="trailerModalLabel">
+                    <i class="fab fa-youtube text-danger me-2"></i>{{ movie.title }} - Official Trailer
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div class="ratio ratio-16x9">
+                    <iframe 
+                        id="trailerIframe"
+                        src="" 
+                        title="YouTube video player" 
+                        frameborder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                        referrerpolicy="strict-origin-when-cross-origin" 
+                        allowfullscreen>
+                    </iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .trailer-thumbnail {
+        transition: all 0.3s ease;
+    }
+    
+    .trailer-thumbnail:hover {
+        transform: scale(1.02);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.3) !important;
+    }
+    
+    .play-button-overlay {
+        position: relative;
+        transition: transform 0.3s ease;
+    }
+    
+    .trailer-thumbnail:hover .play-button-overlay {
+        transform: scale(1.1);
+    }
+    
+    .play-icon-circle {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 0, 0, 0.7);
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 3px solid white;
+    }
+    
+    .cursor-pointer {
+        cursor: pointer;
+    }
+    
+    #trailerModal .modal-xl {
+        max-width: 90vw;
+    }
+    
+    #trailerModal .modal-content {
+        background: #000 !important;
+    }
+    
+    @media (max-width: 768px) {
+        #trailerModal .modal-xl {
+            max-width: 95vw;
+        }
+    }
+</style>
+
+<script>
+    function openTrailerModal(youtubeId) {
+        const iframe = document.getElementById('trailerIframe');
+        const modal = new bootstrap.Modal(document.getElementById('trailerModal'));
+        
+        // Set iframe src with autoplay parameter
+        iframe.src = `https://www.youtube.com/embed/${youtubeId}?autoplay=1&rel=0&modestbranding=1&playsinline=1`;
+        
+        // Show modal
+        modal.show();
+        
+        // Clear iframe when modal is closed (stops video)
+        document.getElementById('trailerModal').addEventListener('hidden.bs.modal', function () {
+            iframe.src = '';
+        });
+    }
+</script>
+
+{% endblock %}

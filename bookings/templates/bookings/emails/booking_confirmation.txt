@@ -1,0 +1,10 @@
+Booking Confirmed!
+
+Hello {{ user.username }},
+
+Your booking {{ booking.booking_number }} for {{ movie.title }} has been confirmed.
+
+Showtime: {{ showtime.date }} at {{ showtime.start_time }}
+Seats: {{ booking.get_seats_display }}
+
+Enjoy your movie!

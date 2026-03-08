@@ -1,0 +1,39 @@
+⏰ MOVIE REMINDER - Movie Booking System
+
+Hello {{ user.get_full_name|default:user.username }},
+
+This is a friendly reminder that your movie starts soon!
+
+========================================
+YOUR BOOKING DETAILS
+========================================
+
+🎬 Movie: {{ movie.title }}
+📅 Date: {{ showtime.get_formatted_date }}
+🕐 Time: {{ showtime.get_formatted_time }}
+🏛️ Theater: {{ theater.name }}
+📍 Screen: {{ showtime.screen.name }}
+💺 Your Seats: {{ booking.get_seats_display }}
+🎫 Booking ID: {{ booking.booking_number }}
+
+========================================
+IMPORTANT REMINDERS
+========================================
+
+✓ Arrive 15-20 minutes early for a smooth entry
+✓ Show your QR code ticket at the entrance
+✓ Food and beverages available at the concession stand
+✓ Please silence your mobile phones during the show
+
+Need your ticket? Visit: http://127.0.0.1:8000/bookings/my-bookings/
+
+🍿 Enjoy your movie! 🎬
+
+---
+Movie Booking System
+Your trusted partner for movie tickets
+
+Questions? Visit our website or contact support.
+
+© 2026 Movie Booking System. All rights reserved.
+This is an automated email. Please do not reply to this message.

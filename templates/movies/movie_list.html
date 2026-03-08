@@ -1,0 +1,15 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Movies - BookMyshowClone{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar Filters -->
+        {% include 'movies/partials/sidebar_filters.html' %}
+        
+        <!-- Movie List -->
+        {% include 'movies/partials/movie_list_grid.html' %}
+    </div>
+</div>
+{% endblock %}

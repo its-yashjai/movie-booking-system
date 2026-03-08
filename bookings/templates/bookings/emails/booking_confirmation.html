@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Booking Confirmed - BookMyshowClone</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+        .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+        .ticket { background: white; border: 2px dashed #4CAF50; padding: 20px; margin: 20px 0; border-radius: 10px; text-align: center; }
+        .footer { text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; color: #666; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Booking Confirmed!</h1>
+        <p>Your movie tickets are ready!</p>
+    </div>
+    <div class="content">
+        <h2>Hello {{ user.username }},</h2>
+        <p>Your booking has been confirmed successfully. Here are your ticket details:</p>
+        <div class="ticket">
+            <h3>{{ movie.title }}</h3>
+            <p><strong>Booking ID:</strong> {{ booking.booking_number }}</p>
+            <p><strong>Date:</strong> {{ showtime.date }}</p>
+            <p><strong>Time:</strong> {{ showtime.start_time }}</p>
+            <p><strong>Theater:</strong> {{ theater.name }}</p>
+            <p><strong>Screen:</strong> {{ showtime.screen.name }}</p>
+            <p><strong>Seats:</strong> {{ booking.get_seats_display }}</p>
+            <p><strong>Total Amount:</strong> ₹{{ total_amount }}</p>
+        </div>
+        <p>Enjoy your movie!</p>
+        <p><strong>The BookMyshowClone Team</strong></p>
+    </div>
+    <div class="footer">
+        <p>© 2025 BookMyshowClone. All rights reserved.</p>
+    </div>
+</body>
+</html>

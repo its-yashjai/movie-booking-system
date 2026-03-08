@@ -1,0 +1,67 @@
+/* Custom CSS for Movie Admin */
+
+/* Make trailer URL input field wider and more visible */
+#id_trailer_url {
+    width: 100% !important;
+    max-width: 600px !important;
+    min-width: 400px !important;
+}
+
+/* Ensure the trailer URL field container is visible */
+.field-trailer_url {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    height: auto !important;
+    overflow: visible !important;
+}
+
+/* Style the trailer section for better visibility */
+.form-row.field-trailer_url label {
+    font-weight: bold;
+    font-size: 14px;
+}
+
+/* Add some spacing */
+fieldset.module h2 {
+    background: #417690;
+    color: white;
+    padding: 10px 15px;
+    margin: 0 0 10px 0;
+}
+
+/* ========== POSTER STYLING ========== */
+/* Style poster preview in list view - FIXED SIZE */
+.field-poster_preview img {
+    width: 50px !important;
+    height: 75px !important;
+    object-fit: cover !important;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    display: block;
+}
+
+/* Style poster preview placeholder - FIXED SIZE */
+.field-poster_preview div {
+    width: 50px !important;
+    height: 75px !important;
+    background: #f0f0f0;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    color: #999;
+    text-align: center;
+}
+
+/* Poster in change form - CONSISTENT 2:3 ASPECT RATIO */
+.field-poster img {
+    max-width: 200px;
+    height: auto;
+    aspect-ratio: 2 / 3;
+    object-fit: cover;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    margin-top: 10px;
+}

@@ -1,0 +1,132 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Login - BookMyshowClone{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="card shadow-lg border-0" style="border-top: 4px solid #f84464;">
+                <div class="card-body p-5">
+                    <!-- Header -->
+                    <div class="text-center mb-5">
+                        <h1 class="h2 mb-2">
+                            <i class="fas fa-sign-in-alt text-danger"></i> Login
+                        </h1>
+                        <p class="text-muted">Welcome back to BookMyshowClone</p>
+                    </div>
+                    
+                    <!-- Messages - Displayed as floating toasts instead -->
+                    
+                    <!-- Form Error Display -->
+                    {% if form_error %}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        {{ form_error }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    {% endif %}
+                    <!-- Login Form -->
+                    <form method="POST" class="needs-validation">
+                        {% csrf_token %}
+                        
+                        <!-- Username Field -->
+                        <div class="mb-4">
+                            <label for="username" class="form-label fw-600">
+                                <i class="fas fa-user me-2"></i>Username
+                            </label>
+                            <input type="text" name="username" class="form-control form-control-lg" 
+                                   id="username" placeholder="Enter your username" required autofocus>
+                        </div>
+                        
+                        <!-- Password Field -->
+                        <div class="mb-4">
+                            <label for="password" class="form-label fw-600">
+                                <i class="fas fa-lock me-2"></i>Password
+                            </label>
+                            <input type="password" name="password" class="form-control form-control-lg" 
+                                   id="password" placeholder="Enter your password" required>
+                        </div>
+                        
+                        <!-- Remember Me -->
+                        <div class="form-check mb-4">
+                            <input class="form-check-input" type="checkbox" id="rememberMe" name="rememberMe">
+                            <label class="form-check-label" for="rememberMe">
+                                Remember me
+                            </label>
+                        </div>
+                        
+                        <!-- Submit Button -->
+                        <button type="submit" class="btn btn-danger btn-lg w-100 mb-3 fw-600" id="loginBtn">
+                            <i class="fas fa-sign-in-alt me-2"></i><span id="btnText">Login</span>
+                            <span id="btnSpinner" class="spinner-border spinner-border-sm ms-2" role="status" aria-hidden="true" style="display: none;"></span>
+                        </button>
+                    </form>
+                    
+                    <hr>
+                    
+                    <!-- Footer Links -->
+                    <div class="text-center">
+                        <p class="text-muted mb-3">
+                            Don't have an account? 
+                            <a href="{% url 'register' %}" class="text-danger text-decoration-none fw-600">Sign Up</a>
+                        </p>
+                        <p class="text-muted small">
+                            <a href="{% url 'forgot_password' %}" class="text-muted text-decoration-none">Forgot Password?</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control-lg {
+        height: 50px;
+        font-size: 1rem;
+        border-radius: 6px;
+        border: 1px solid #dee2e6;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control-lg:focus {
+        border-color: #f84464;
+        box-shadow: 0 0 0 0.2rem rgba(248, 68, 100, 0.25);
+    }
+    
+    .btn-lg {
+        height: 50px;
+        font-size: 1rem;
+        border-radius: 6px;
+    }
+    
+    .card {
+        border-radius: 12px;
+    }
+    
+    .spinner-border-sm {
+        width: 1rem;
+        height: 1rem;
+        border-width: 0.2rem;
+    }
+</style>
+
+<script>
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const loginBtn = document.getElementById('loginBtn');
+        const btnText = document.getElementById('btnText');
+        const btnSpinner = document.getElementById('btnSpinner');
+        
+        // Disable button and show spinner
+        loginBtn.disabled = true;
+        btnText.style.display = 'none';
+        btnSpinner.style.display = 'inline-block';
+    });
+</script>
+{% endblock %}
+
+{% block nav_links %}
+<p>Don't have an account? <a href="{% url 'register' %}">Register here</a></p>
+<p>Admin access? <a href="/admin/">Admin Panel</a></p>
+{% endblock %}

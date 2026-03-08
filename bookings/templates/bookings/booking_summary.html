@@ -1,0 +1,339 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Booking Summary - Razorpay{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card border-0 shadow-lg" style="background: var(--surface-light); border: 1px solid rgba(229, 9, 20, 0.2);">
+                <div class="card-header text-white py-4 d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, var(--primary-accent) 0%, #cc0812 100%); border-bottom: 1px solid rgba(229, 9, 20, 0.3);">
+                    <h4 class="mb-0" style="color: white;"><i class="fas fa-list-check me-2"></i>Review Your Booking</h4>
+                    
+                    <!-- ⏲️ WHY: UX Trust. A visible timer shows how long the seat reservation lasts. -->
+                    <!-- HOW: It pulls the exact TTL from Redis via the Django context. -->
+                    <!-- <div id="booking-timer" class="badge bg-warning text-dark fs-6 shadow-sm animate__animated animate__pulse animate__infinite">
+                        <i class="fas fa-hourglass-half me-1"></i> 
+                        <span id="timer-display">12:00</span>
+                    </div> -->
+                </div>
+                <div class="card-body p-4" style="background: var(--surface-light); color: var(--text-white);">
+                    <div class="row align-items-center mb-4">
+                        <div class="col-md-3 text-center mb-3 mb-md-0">
+                            {% if movie.poster %}
+                            <img src="{{ movie.poster.url }}" alt="{{ movie.title }}" class="img-fluid rounded shadow" style="max-height: 200px;">
+                            {% else %}
+                            <div class="rounded d-flex align-items-center justify-content-center mx-auto shadow" style="width: 150px; height: 200px; background: rgba(0, 0, 0, 0.3); border: 2px dashed rgba(229, 9, 20, 0.3);">
+                                <i class="fas fa-film fa-3x" style="color: rgba(255, 255, 255, 0.4);"></i>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-9">
+                            <h2 class="h3" style="color: var(--text-white);">{{ movie.title }}</h2>
+                            <p class="lead mb-2" style="color: rgba(255, 255, 255, 0.8);">{{ showtime.screen.theater.name }}</p>
+                            <div class="d-flex flex-wrap gap-3" style="color: rgba(255, 255, 255, 0.6); font-size: 0.95rem;">
+                                <span><i class="fas fa-calendar-day me-1"></i> {{ showtime.get_formatted_date }}</span>
+                                <span><i class="fas fa-clock me-1"></i> {{ showtime.get_formatted_time }}</span>
+                                <span><i class="fas fa-door-open me-1"></i> {{ showtime.screen.name }}</span>
+                                <span><i class="fas fa-language me-1"></i> {{ movie.language.name }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="p-4 rounded-3 h-100" style="background: rgba(229, 9, 20, 0.1); border: 1px solid rgba(229, 9, 20, 0.2);">
+                                <h5 class="mb-4" style="color: var(--text-white); border-bottom: 2px solid rgba(229, 9, 20, 0.3); padding-bottom: 0.75rem;">
+                                    <i class="fas fa-chair me-2" style="color: var(--primary-accent);"></i>Seat Details
+                                </h5>
+                                <div class="mb-3">
+                                    <span class="d-block" style="color: rgba(255, 255, 255, 0.6); font-size: 0.9rem;">Number of Seats:</span>
+                                    <span class="fs-4 fw-bold" style="color: var(--text-white);">{{ seat_count }}</span>
+                                </div>
+                                <div>
+                                    <span class="d-block mb-2" style="color: rgba(255, 255, 255, 0.6); font-size: 0.9rem;">Selected Seats:</span>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        {% for seat in seat_ids %}
+                                        <span class="badge px-3 py-2 fs-6" style="background: var(--primary-accent); color: white;">{{ seat }}</span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="p-4 rounded-3 h-100" style="background: rgba(229, 9, 20, 0.1); border: 1px solid rgba(229, 9, 20, 0.2);">
+                                <h5 class="mb-4" style="color: var(--text-white); border-bottom: 2px solid rgba(229, 9, 20, 0.3); padding-bottom: 0.75rem;">
+                                    <i class="fas fa-receipt me-2" style="color: var(--primary-accent);"></i>Price Summary
+                                </h5>
+                                <table class="table table-borderless mb-0" style="color: rgba(255, 255, 255, 0.8);">
+                                    <tr>
+                                        <td class="ps-0" style="color: rgba(255, 255, 255, 0.7);">Base Ticket Price:</td>
+                                        <td class="text-end pe-0" style="color: rgba(255, 255, 255, 0.7);">₹{{ price_details.base_price }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="ps-0 small" style="color: rgba(255, 255, 255, 0.5);">Convenience Fee:</td>
+                                        <td class="text-end pe-0 small" style="color: rgba(255, 255, 255, 0.5);">₹{{ price_details.convenience_fee }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="ps-0 small" style="color: rgba(255, 255, 255, 0.5);">Tax (GST 18%):</td>
+                                        <td class="text-end pe-0 small" style="color: rgba(255, 255, 255, 0.5);">₹{{ price_details.tax_amount }}</td>
+                                    </tr>
+                                    <tr style="border-top: 1px solid rgba(229, 9, 20, 0.2);">
+                                        <td class="ps-0 fw-bold fs-5" style="color: var(--text-white);">Amount Payable:</td>
+                                        <td class="text-end pe-0 fw-bold fs-5" style="color: #86efac;">₹{{ total_amount }}</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div style="background: rgba(255, 193, 7, 0.15); border: 1px solid rgba(255, 193, 7, 0.3); border-top: 1px solid rgba(229, 9, 20, 0.2); padding: 1.25rem 1.5rem; margin: 0;">
+                    <div style="color: #fcd34d; font-weight: 600; display: flex; align-items: flex-start; gap: 0.75rem;">
+                        <i class="fas fa-hourglass-end" style="flex-shrink: 0; margin-top: 0.25rem;"></i>
+                        <div>
+                            <strong>⏰ Alert!</strong> Please complete your payment within <strong>12 minutes</strong>. Don't close or refresh the payment window - it might lead to booking cancellation and loss of selected seats.
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent p-4 border-0" style="background: var(--surface-light);">
+                    <div class="row g-3">
+                        <!-- <div class="col-md-6">
+                            <a href="{% url 'select_seats' showtime.id %}" class="btn btn-outline-secondary btn-lg w-100">
+                                <i class="fas fa-chevron-left me-2"></i>Change Seats
+                            </a>
+                        </div> -->
+                        <!-- <div class="col-md-6">
+                            <button id="confirm-booking-btn" class="btn btn-success btn-lg w-100 shadow">
+                                Proceed to pay with Razorpay <i class="fas fa-arrow-right ms-2"></i>
+                            </button>
+                        </div> -->
+                        <div class="col-12">
+    <button id="confirm-booking-btn"
+            class="btn btn-lg w-100 shadow-sm"
+            style="background: linear-gradient(135deg, var(--primary-accent) 0%, #cc0812 100%); color: white; border: none; font-weight: 600; transition: all 0.3s ease;">
+        Proceed to pay with Razorpay
+        <i class="fas fa-arrow-right ms-2"></i>
+    </button>
+</div>
+
+                    </div>
+                </div>
+            </div>
+            
+            <p class="text-center small mt-4" style="color: rgba(255, 255, 255, 0.6);">
+                <i class="fas fa-info-circle me-1"></i> 
+                By clicking "Proceed to pay with Razorpay", you agree to our Terms & Conditions.
+            </p>
+        </div>
+    </div>
+</div>
+
+<style>
+    :root {
+        --primary-accent: #E50914;
+        --surface-light: #2a2a2a;
+        --text-white: #ffffff;
+    }
+</style>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+{{ seat_ids|json_script:"seat-data" }}
+<script>
+// 🚀 WHY: Streamlined Flow.
+// We skip separate landing pages and trigger the payment modal directly for a 'One-Click' feel.
+// HOW: This function receives order data from our 'create-booking' API and opens Razorpay.
+// WHEN: Triggers after the backend confirms seats are successfully reserved in Redis.
+async function initiateRazorpayCheckout(data) {
+    const options = {
+        "key": data.razorpay_key_id, // WHY: Identifies your account to Razorpay.
+        "amount": data.amount, // WHY: The final price (in paise).
+        "currency": data.currency,
+        "name": "Movie Booking System",
+        "description": "Cinema Ticket Booking",
+        "order_id": data.order_id, // WHY: Security anchor to track this exact payment attempt.
+        "handler": function (response) {
+            // 🛡️ WHY: Verification Chain.
+            // On success, Razorpay gives us tokens that we MUST verify on the server.
+            window.location.href = `/bookings/${data.booking_id}/payment/success/?razorpay_payment_id=${response.razorpay_payment_id}&razorpay_order_id=${response.razorpay_order_id}&razorpay_signature=${response.razorpay_signature}`;
+        },
+        "prefill": {
+            "name": "{{ user.username }}",
+            "email": "{{ user.email }}"
+        },
+        "theme": { "color": "#E50914" },
+        "modal": {
+            "ondismiss": async function() {
+                // Release the booking and seats immediately when payment modal is closed
+                const bookingId = data.booking_id;
+                try {
+                    const response = await fetch(`/bookings/api/cancel/${bookingId}/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                        body: JSON.stringify({
+                            reason: 'Payment modal closed/abandoned by user'
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    if (result.success) {
+                        window.location.href = `{% url 'select_seats' showtime.id %}`;
+                    }
+                } catch (error) {
+                    console.error('Error releasing booking:', error);
+                    window.location.href = `{% url 'select_seats' showtime.id %}`;
+                }
+            }
+        }
+    };
+
+    if (data.is_mock) {
+        // 🎭 MOCK MODE: Skip Razorpay and simulate a success after a tiny delay
+        setTimeout(() => {
+            options.handler({
+                razorpay_payment_id: "pay_mock_" + Math.random().toString(36).substr(2, 9),
+                razorpay_order_id: data.order_id,
+                razorpay_signature: "sig_mock_verified"
+            });
+        }, 1500);
+    } else {
+        // 💳 LIVE MODE: Open the real deal
+        razorpayInstance = new Razorpay(options);
+        razorpayInstance.on('payment.failed', function (response){
+            window.location.href = `/bookings/${data.booking_id}/payment/failed/`;
+        });
+        razorpayInstance.open();
+    }
+}
+
+// ⏲️ Timer initialization - will auto-dismiss Razorpay modal after 12 minutes
+let razorpayInstance = null;
+
+function initTimer(duration) {
+    let timer = duration;
+    const display = document.getElementById('timer-display');
+    const timerBadge = document.getElementById('booking-timer');
+
+    const countdown = setInterval(function () {
+        const minutes = parseInt(timer / 60, 10);
+        const seconds = parseInt(timer % 60, 10);
+
+        display.textContent = (minutes < 10 ? "0" + minutes : minutes) + ":" + (seconds < 10 ? "0" + seconds : seconds);
+
+        if (--timer < 0) {
+            clearInterval(countdown);
+            timerBadge.className = 'badge bg-danger shadow-sm';
+            display.textContent = "EXPIRED";
+            
+            // 🔐 AUTO-DISMISS: Close Razorpay modal when timer expires
+            if (razorpayInstance) {
+                razorpayInstance.close();
+            }
+            
+            alert("⏰ Payment window expired (12 minutes). Your seats have been released. Please select new seats.");
+            window.location.href = "{% url 'select_seats' showtime.id %}";
+        }
+        
+        // Change color to danger when less than 1 minute left
+        if (timer < 60) {
+            timerBadge.classList.replace('bg-warning', 'bg-danger');
+        }
+    }, 1000);
+}
+
+// Start the timer when the page loads (12 minutes = 720 seconds)
+document.addEventListener('DOMContentLoaded', () => {
+    initTimer(parseInt("{{ expires_in_seconds|default:720 }}"));
+});
+
+document.getElementById('confirm-booking-btn').addEventListener('click', async function() {
+    const showtimeId = "{{ showtime.id }}";
+    const seatIds = JSON.parse(document.getElementById('seat-data').textContent);
+    const btn = this;
+    let bookingId = null;
+    
+    try {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Verifying seats...';
+        
+        // First, check if seats are available
+        const seatStatusResponse = await fetch(`/bookings/api/seat-status/${showtimeId}/`);
+        const seatStatusData = await seatStatusResponse.json();
+        
+        // Check if all selected seats are available
+        const reservedSeats = seatStatusData.reserved_seats || [];
+        const bookedSeats = seatStatusData.booked_seats || [];
+        
+        const unavailableSeats = seatIds.filter(seat => 
+            reservedSeats.includes(seat) || bookedSeats.includes(seat)
+        );
+        
+        if (unavailableSeats.length > 0) {
+            // Seats are not available
+            const seatStatus = unavailableSeats.every(seat => bookedSeats.includes(seat)) 
+                ? 'booked' 
+                : 'reserved';
+            const errorMsg = `Seats ${unavailableSeats.join(', ')} are already ${seatStatus}. Please select different seats.`;
+            
+            btn.className = 'btn btn-danger btn-lg w-100 shadow';
+            btn.innerHTML = `<i class="fas fa-times me-2"></i> ${errorMsg}`;
+            
+            setTimeout(() => {
+                window.location.href = `{% url 'select_seats' showtime.id %}`;
+            }, 3000);
+            return;
+        }
+        
+        // Seats are available, proceed to create booking
+        const response = await fetch(`/bookings/api/create-booking/${showtimeId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ seat_ids: seatIds })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // ✅ SUCCESS: Seats are now 'Reserved' in Redis.
+            bookingId = data.booking_id;
+            
+            // Set up beacon to release seats if tab closes during payment
+            window.addEventListener('beforeunload', () => {
+                if (bookingId) {
+                    navigator.sendBeacon(`/bookings/beacon/release/${bookingId}/`, 
+                        JSON.stringify({ reason: 'Tab closed during payment' })
+                    );
+                }
+            });
+            
+            btn.disabled = true;
+            btn.className = 'btn btn-primary btn-lg w-100 shadow';
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Initiating Payment...';
+            initiateRazorpayCheckout(data);
+        } else {
+            // 🚨 CONFLICT: Someone else took the seats between selection and clicking pay.
+            const errorMsg = data.error || 'Oh no! These seats were just taken.';
+            btn.className = 'btn btn-danger btn-lg w-100 shadow';
+            btn.innerHTML = `<i class="fas fa-times me-2"></i> ${errorMsg}`;
+            
+            setTimeout(() => {
+                window.location.href = `{% url 'select_seats' showtime.id %}`;
+            }, 3000);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        btn.disabled = false;
+        btn.innerHTML = 'Proceed to pay with Razorpay <i class="fas fa-arrow-right ms-2"></i>';
+        alert('A connection error occurred. Please try again.');
+    }
+});
+</script>
+{% endblock %}

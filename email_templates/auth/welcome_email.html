@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 8px 8px 0 0; }
+        .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px; }
+        .button { display: inline-block; background: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+        .footer { text-align: center; font-size: 12px; color: #666; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Welcome to BookMyshowClone!</h1>
+        </div>
+        <div class="content">
+            <p>Hello {{ username }},</p>
+            
+            <p>Thank you for joining BookMyshowClone! We're excited to have you on board.</p>
+            
+            <p>Your account has been successfully created. You can now:</p>
+            <ul>
+                <li>✅ Browse movies and showtimes</li>
+                <li>✅ Book your favorite seats</li>
+            </ul>
+            
+            <div style="background: #f0f0f0; padding: 15px; border-radius: 5px; margin: 20px 0;">
+                <h3>Account Details:</h3>
+                <p>
+                    <strong>Username:</strong> {{ user.username }}<br>
+                    <strong>Email:</strong> {{ user.email }}<br>
+                    <strong>Joined:</strong> {{ signup_date|date:"F d, Y" }}
+                </p>
+            </div>
+            
+            <a href="{{ site_url }}" class="button">Get Started</a>
+            
+            <p>If you didn't create this account, please ignore this email.</p>
+            
+            <p>Best regards,<br>The BookMyshowClone Team</p>
+        </div>
+        <div class="footer">
+            <p>&copy; 2025 BookMyshowClone. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

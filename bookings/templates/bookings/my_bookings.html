@@ -1,0 +1,174 @@
+{% extends 'base/base.html' %}
+
+{% block title %}My Bookings - BookMyshowClone{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0 fw-bold text-white">My Bookings</h2>
+        <a href="{% url 'home' %}" class="btn btn-bms-primary shadow-sm">
+            <i class="fas fa-plus me-2"></i>New Booking
+        </a>
+    </div>
+
+    {% if bookings %}
+    <section class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        {% for booking in bookings %}
+        <div class="col">
+            <div class="card h-100 border-0 shadow-sm hover-shadow transition" style="background: var(--surface-light); border: 1px solid rgba(229, 9, 20, 0.1);">
+                <div class="card-header border-0 d-flex justify-content-between align-items-center 
+                           {% if booking.status == 'CONFIRMED' %}bg-success text-white
+                           {% elif booking.status == 'PENDING' %}bg-warning text-dark
+                           {% else %}bg-danger text-white{% endif %}">
+                    <span class="small fw-bold">
+                        <i class="fas fa-ticket-alt me-2"></i>{{ booking.booking_number }}
+                    </span>
+                    <span class="badge 
+                           {% if booking.status == 'CONFIRMED' %}bg-success
+                           {% elif booking.status == 'PENDING' %}bg-warning
+                           {% else %}bg-danger{% endif %}">
+                        {{ booking.status }}
+                    </span>
+                </div>
+                <div class="card-body" style="color: var(--text-white);">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div class="flex-grow-1">
+                            <h5 class="card-title fw-bold mb-1" style="color: var(--text-white);">{{ booking.showtime.movie.title }}</h5>
+                            <p style="color: rgba(255, 255, 255, 0.7);" class="small mb-3">
+                                <i class="fas fa-map-marker-alt me-1"></i> {{ booking.showtime.screen.theater.name }}
+                                <br>
+                                <small><i class="fas fa-tv me-1"></i> {{ booking.showtime.screen.name }}</small>
+                            </p>
+                        </div>
+                        
+                        <!-- Status Badge -->
+                        {% if booking.status == 'CONFIRMED' %}
+                        <div class="status-container ms-2 flex-shrink-0">
+                            <span class="badge bg-success"><i class="fas fa-check-circle me-1"></i>Confirmed</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-flex justify-content-between mb-2 small" style="color: rgba(255, 255, 255, 0.7);">
+                        <span><i class="fas fa-calendar-alt me-2"></i>{{ booking.showtime.date|date:"M d, Y" }}</span>
+                        <span><i class="fas fa-clock me-2"></i>{{ booking.showtime.start_time|date:"g:i A" }}</span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <span class="small" style="color: rgba(255, 255, 255, 0.7);">Seats:</span>
+                        <div class="mt-1">
+                            {% for seat in booking.seats %}
+                            <span class="badge" style="background: rgba(229, 9, 20, 0.2); color: #ff6b6b;">{{ seat }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <!-- Payment/Amount Information -->
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="small" style="color: rgba(255, 255, 255, 0.7);">
+                                {% if booking.status == 'CONFIRMED' %}
+                                    Amount Paid:
+                                {% elif booking.status == 'PENDING' %}
+                                    Amount:
+                                {% else %}
+                                    Amount to be Paid:
+                                {% endif %}
+                            </span>
+                            <strong class="
+                                {% if booking.status == 'CONFIRMED' %}text-success
+                                {% elif booking.status == 'PENDING' %}text-warning
+                                {% else %}text-danger{% endif %}">
+                                ₹{{ booking.total_amount }}
+                            </strong>
+                        </div>
+                    </div>
+                    
+                    <!-- Status-specific messages -->
+                    {% if booking.status == 'PENDING' %}
+                    <div class="small mb-3" style="color: #ffc107;">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Payment is being processed. Please wait for confirmation.
+                    </div>
+                    {% elif booking.status != 'CONFIRMED' %}
+                    <!-- <div class="small text-danger mb-3">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                         Booking failed - please try again. -->
+                    <!-- </div> --> 
+                    {% endif %}
+                </div>
+                <div class="card-footer border-top-0 pb-3" style="background: var(--surface-dark);">
+                    <a href="{% url 'booking_detail' booking.id %}" class="btn 
+                       {% if booking.status == 'CONFIRMED' %}btn-success
+                       {% elif booking.status == 'PENDING' %}btn-warning
+                       {% else %}btn-danger{% endif %} w-100 btn-sm rounded-pill">
+                        <i class="fas fa-
+                           {% if booking.status == 'CONFIRMED' %}ticket-alt
+                           {% elif booking.status == 'PENDING' %}clock
+                           {% else %}info-circle{% endif %} me-2"></i>
+                        {% if booking.status == 'CONFIRMED' %}
+                            View Ticket Details
+                        {% elif booking.status == 'PENDING' %}
+                            Check Payment Status
+                        {% else %}
+                            View Failure Details
+                        {% endif %}
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </section>
+    {% endif %}    {% if not bookings %}
+    <div class="text-center py-5 rounded-4 border" style="background: var(--surface-light); border: 1px solid rgba(229, 9, 20, 0.2);">
+        <div class="mb-4">
+            <i class="fas fa-ticket-alt fa-4x" style="color: rgba(255, 255, 255, 0.2);"></i>
+        </div>
+        <h3 style="color: var(--text-white);">No bookings found</h3>
+        <p style="color: rgba(255, 255, 255, 0.6);" class="mb-4">You haven't booked any movies yet. Catch the latest blockbuster today!</p>
+        <a href="{% url 'home' %}" class="btn btn-bms-primary btn-lg shadow">Browse Movies</a>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .hover-shadow:hover { 
+        box-shadow: 0 10px 20px rgba(229, 9, 20, 0.2) !important;
+        transform: translateY(-5px);
+    }
+    
+    .transition { 
+        transition: all 0.3s ease; 
+    }
+    
+    /* Clean alert styles */
+    .alert {
+        border: none;
+        border-radius: 6px;
+        border-left: 4px solid;
+        background: var(--surface-light);
+    }
+    
+    .alert-warning {
+        border-left-color: #ffc107;
+        color: #ffc107;
+    }
+    
+    .alert-danger {
+        border-left-color: #ff6b6b;
+        color: #ff6b6b;
+    }
+    
+    /* Status badge styles */
+    .status-container {
+        position: relative;
+        text-align: center;
+    }
+    
+    .status-container .badge {
+        font-size: 0.8rem;
+        padding: 0.5rem 0.75rem;
+    }
+</style>
+
+{% endblock %}

@@ -1,0 +1,36 @@
+❌ PAYMENT UNSUCCESSFUL - Movie Booking System
+
+Hello {{ user.get_full_name|default:user.username }},
+
+We're sorry, but we were unable to process your payment.
+
+========================================
+BOOKING DETAILS
+========================================
+
+🎫 Booking ID: {{ booking.booking_number }}
+🎬 Movie: {{ movie.title }}
+💺 Seats: {{ booking.get_seats_display }}
+
+========================================
+
+WHAT HAPPENED?
+Your selected seats have been released and are now available for other customers.
+You can try booking again at any time.
+
+COMMON REASONS FOR PAYMENT FAILURE:
+- Insufficient funds in your account
+- Card declined by your bank
+- Incorrect payment details entered
+- Payment timeout (session expired)
+- Network connection issues
+
+NEED HELP?
+If you continue to experience issues or believe this is an error,
+please contact our support team. We're here to help!
+
+---
+Movie Booking System
+Your trusted partner for movie tickets
+
+© 2026 Movie Booking System. All rights reserved.

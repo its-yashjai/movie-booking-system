@@ -1,0 +1,157 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Register - BookMyshowClone{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-lg border-0" style="border-top: 4px solid #f84464;">
+                <div class="card-body p-5">
+                    <!-- Header -->
+                    <div class="text-center mb-5">
+                        <h1 class="h2 mb-2">
+                            <i class="fas fa-user-plus text-danger"></i> Create Account
+                        </h1>
+                        <p class="text-muted">Join BookMyshowClone to book your favorite movies</p>
+                    </div>
+                    
+                    <!-- Messages - Displayed as floating toasts instead -->
+                    
+                    <!-- Registration Form -->
+                    <form method="POST" class="needs-validation">
+                        {% csrf_token %}
+                        
+                        <!-- Username Field -->
+                        <div class="mb-4">
+                            <label for="id_username" class="form-label fw-600">
+                                <i class="fas fa-user me-2"></i>Username
+                            </label>
+                            <input type="text" name="username" class="form-control form-control-lg {% if form.username.errors %}is-invalid{% endif %}" 
+                                   id="id_username" placeholder="Choose a username" value="{{ form.username.value|default:'' }}" required autofocus>
+                            {% if form.username.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.username.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Email Field -->
+                        <div class="mb-4">
+                            <label for="id_email" class="form-label fw-600">
+                                <i class="fas fa-envelope me-2"></i>Email Address
+                            </label>
+                            <input type="email" name="email" class="form-control form-control-lg {% if form.email.errors %}is-invalid{% endif %}" 
+                                   id="id_email" placeholder="your.email@example.com" value="{{ form.email.value|default:'' }}" required>
+                            {% if form.email.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.email.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <small class="form-text text-muted d-block mt-2">
+                                    We'll use this for booking confirmations and updates.
+                                </small>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Password Field -->
+                        <div class="mb-4">
+                            <label for="id_password1" class="form-label fw-600">
+                                <i class="fas fa-lock me-2"></i>Password
+                            </label>
+                            <input type="password" name="password1" class="form-control form-control-lg {% if form.password1.errors %}is-invalid{% endif %}" 
+                                   id="id_password1" placeholder="Enter password" required>
+                            {% if form.password1.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.password1.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <small class="form-text text-muted d-block mt-2">
+                                    At least 8 characters. Can't be too similar to your personal info or commonly used.
+                                </small>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Confirm Password Field -->
+                        <div class="mb-4">
+                            <label for="id_password2" class="form-label fw-600">
+                                <i class="fas fa-lock me-2"></i>Confirm Password
+                            </label>
+                            <input type="password" name="password2" class="form-control form-control-lg {% if form.password2.errors %}is-invalid{% endif %}" 
+                                   id="id_password2" placeholder="Confirm password" required>
+                            {% if form.password2.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.password2.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <small class="form-text text-muted d-block mt-2">
+                                    Enter the same password for verification.
+                                </small>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Submit Button -->
+                        <button type="submit" class="btn btn-danger btn-lg w-100 mb-3 fw-600">
+                            <i class="fas fa-user-plus me-2"></i>Create Account
+                        </button>
+                    </form>
+                    
+                    <!-- Terms Notice -->
+                    <div class="text-center text-muted small mb-3">
+                        <p>By registering, you agree to our<br>
+                        <a href="#" class="text-danger text-decoration-none">Terms of Service</a> and 
+                        <a href="#" class="text-danger text-decoration-none">Privacy Policy</a></p>
+                    </div>
+                    
+                    <hr>
+                    
+                    <!-- Footer Links -->
+                    <div class="text-center">
+                        <p class="text-muted">
+                            Already have an account? 
+                            <a href="{% url 'login' %}" class="text-danger text-decoration-none fw-600">Login here</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control-lg {
+        height: 50px;
+        font-size: 1rem;
+        border-radius: 6px;
+        border: 1px solid #dee2e6;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control-lg:focus {
+        border-color: #f84464;
+        box-shadow: 0 0 0 0.2rem rgba(248, 68, 100, 0.25);
+    }
+    
+    .btn-lg {
+        height: 50px;
+        font-size: 1rem;
+        border-radius: 6px;
+    }
+    
+    .card {
+        border-radius: 12px;
+    }
+    
+    .fw-600 {
+        font-weight: 600;
+    }
+</style>
+{% endblock %}

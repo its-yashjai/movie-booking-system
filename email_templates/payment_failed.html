@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Failed - Movie Booking System</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background-color: #f4f4f7;
+            line-height: 1.6;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+        }
+        .header {
+            background: linear-gradient(135deg, #fc8181 0%, #e53e3e 100%);
+            color: #ffffff;
+            padding: 40px 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0 0 10px 0;
+            font-size: 32px;
+        }
+        .content {
+            padding: 40px 30px;
+        }
+        .warning-box {
+            background: #fff5f5;
+            border-left: 4px solid #fc8181;
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 8px;
+        }
+        .info-box {
+            background: #ebf8ff;
+            border-left: 4px solid #4299e1;
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 8px;
+        }
+        .button {
+            display: inline-block;
+            padding: 15px 35px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            margin: 20px 0;
+        }
+        .footer {
+            background-color: #2d3748;
+            color: #ffffff;
+            padding: 30px;
+            text-align: center;
+            font-size: 14px;
+        }
+        @media only screen and (max-width: 600px) {
+            .content { padding: 20px !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Header -->
+        <div class="header">
+            <h1>❌ Payment Unsuccessful</h1>
+            <p>We couldn't process your payment</p>
+        </div>
+        
+        <!-- Content -->
+        <div class="content">
+            <p style="font-size: 18px; color: #2d3748;">
+                Hello <strong>{{ user.get_full_name|default:user.username }}</strong>,
+            </p>
+            
+            <p style="color: #4a5568;">
+                We're sorry, but we were unable to process your payment for the following booking:
+            </p>
+            
+            <div class="warning-box">
+                <strong style="font-size: 16px; color: #742a2a;">Booking Details:</strong>
+                <ul style="margin: 15px 0; color: #742a2a;">
+                    <li><strong>Booking ID:</strong> {{ booking.booking_number }}</li>
+                    <li><strong>Movie:</strong> {{ movie.title }}</li>
+                    <li><strong>Seats:</strong> {{ booking.get_seats_display }}</li>
+                </ul>
+            </div>
+            
+            <p style="color: #4a5568; margin: 25px 0;">
+                <strong>What happened?</strong><br>
+                Your selected seats have been released and are now available for other customers.
+                You can try booking again at any time.
+            </p>
+            
+            <div class="info-box">
+                <strong style="font-size: 16px; color: #2c5282;">Common reasons for payment failure:</strong>
+                <ul style="margin: 15px 0; color: #2c5282;">
+                    <li>Insufficient funds in your account</li>
+                    <li>Card declined by your bank</li>
+                    <li>Incorrect payment details entered</li>
+                    <li>Payment timeout (session expired)</li>
+                    <li>Network connection issues</li>
+                </ul>
+            </div>
+            
+            <div style="text-align: center; margin: 35px 0;">
+                <a href="#" class="button">Try Booking Again</a>
+            </div>
+            
+            <p style="color: #718096; font-size: 14px; margin-top: 30px;">
+                <strong>Need help?</strong><br>
+                If you continue to experience issues or believe this is an error, 
+                please contact our support team. We're here to help!
+            </p>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <p style="margin-bottom: 15px; font-size: 16px; font-weight: 600;">
+                Movie Booking System
+            </p>
+            <p style="opacity: 0.9; margin-bottom: 20px;">
+                Your trusted partner for movie tickets
+            </p>
+            <p style="font-size: 12px; opacity: 0.8;">
+                © 2026 Movie Booking System. All rights reserved.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

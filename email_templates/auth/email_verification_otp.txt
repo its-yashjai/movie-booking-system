@@ -1,0 +1,29 @@
+wHello {{ username }},
+
+Welcome to MovieBooking! 🎬
+
+Please verify your email address using the verification code below:
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    VERIFICATION CODE: {{ otp }}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⏰ IMPORTANT: This code will expire in {{ expiry_minutes }} minutes.
+
+Once verified, you'll enjoy:
+✓ Book movie tickets - Easy and fast booking
+✓ Manage your account - Update preferences anytime
+✓ Booking confirmations - Get instant updates
+✓ Exclusive offers - Special deals for members
+
+⚠️ Security Notice:
+If you didn't create this account, please ignore this email.
+
+Need help? Contact us at support@moviebooking.com
+
+Happy watching!
+The MovieBooking Team 🍿
+
+---
+© 2026 MovieBooking. All rights reserved.
+Visit: {{ site_url }}

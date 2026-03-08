@@ -1,0 +1,23 @@
+<div class="hero-banner mb-5">
+    <h1 class="display-4 fw-bold mb-3">Your Movie Experience Awaits</h1>
+    <p class="lead mb-4">Book premium seats and enjoy cinema like never before</p>
+    <div class="search-container position-relative">
+        <form action="{% url 'movie_list' %}" method="GET" class="position-relative" id="mainSearchForm">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" name="q" id="mainSearchInput" class="search-input" 
+                   placeholder="Search movies, theaters, or events..." 
+                   value="{{ request.GET.q|default:'' }}" autocomplete="off">
+            <button type="submit" class="btn btn-bms-primary position-absolute" 
+                    style="right: 8px; top: 50%; transform: translateY(-50%); border-radius: 25px; padding: 8px 16px; z-index: 10;">
+                <i class="fas fa-search me-1"></i>Search
+            </button>
+        </form>
+        <div id="mainAutocompleteResults" class="autocomplete-results shadow-lg" 
+             style="display: none; position: absolute; width: 100%; top: 100%; left: 0; z-index: 1000; background: var(--surface-light); border-radius: 0 0 10px 10px; border: 1px solid rgba(229, 9, 20, 0.3); max-height: 400px; overflow-y: auto;"></div>
+    </div>
+    <div class="mt-4">
+        <a href="{% url 'movie_list' %}" class="btn btn-bms-primary btn-lg px-5">
+            <i class="fas fa-ticket-alt me-2"></i>Explore Movies
+        </a>
+    </div>
+</div>

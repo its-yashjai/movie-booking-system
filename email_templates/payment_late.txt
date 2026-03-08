@@ -1,0 +1,83 @@
+⚠️ PAYMENT RECEIVED - WINDOW EXPIRED
+Refund Has Been Initiated
+
+Hello {{ user.first_name|default:"Valued Customer" }},
+
+We have received your payment for booking {{ booking.booking_number }}, but unfortunately it arrived AFTER the 12-minute payment window expired. This means we cannot confirm your booking, but good news - your refund has been initiated!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📊 TRANSACTION STATUS SUMMARY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ Payment Received Successfully
+   Payment ID: {{ payment_id }}
+
+⏰ Payment Time
+   {{ payment_received_at|date:"d M, Y \a\t H:i:s" }}
+
+❌ Window Expired At
+   {{ expires_at|date:"d M, Y \a\t H:i:s" }} (12 minutes from payment initiation)
+
+📌 Booking Status
+   FAILED - Refund Initiated
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎬 BOOKING DETAILS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Movie:              {{ movie.title }}
+Theater:            {{ theater.name }}
+Date:               {{ showtime.date|date:"d M, Y" }}
+Time:               {{ showtime.start_time }}
+Selected Seats:     {{ booking.get_seats_display }}
+Booking Amount:     ₹{{ booking.total_amount }}
+Booking Number:     {{ booking.booking_number }}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💰 REFUND STATUS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Your payment of ₹{{ booking.total_amount }} HAS BEEN MARKED FOR REFUND and will be credited back to your original payment method.
+
+⏳ REFUND TIMELINE:
+   • Initiated:           {{ "now"|date:"d M, Y \a\t H:i" }}
+   • Expected in Account: Within 24 hours
+   • Processing Note:     Some banks may take up to 48 hours for the amount to reflect
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+❓ WHY DID THIS HAPPEN?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+To ensure fair access to seats for all users, we reserve seats for only 12 minutes during the payment process. Your payment arrived after this window closed, so we cannot confirm your booking. However, since your payment was successfully received, we are processing a FULL REFUND without any deductions.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔄 WHAT YOU CAN DO NEXT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. TRY AGAIN:        Visit our website and select your desired seats again
+2. FASTER PAYMENT:   Complete the payment within the 12-minute window this time
+3. CHECK AVAILABILITY: Availability may have changed, so check for your preferred shows
+4. NEED HELP?:       Contact our support team if you have any questions
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Need Help?
+If you have any concerns about this refund or your booking, please reach out to our support team:
+
+📧 Email:  support@moviebooking.com
+📞 Phone:  1-800-MOVIES-1
+🕒 Hours:  24/7 Customer Support
+
+Best regards,
+🎬 Movie Booking System Team
+
+─────────────────────────────────────────────────────────────
+© 2026 Movie Booking System. All rights reserved.
+This is an automated email. Please do not reply to this email.
+Email sent: {{ "now"|date:"d M, Y H:i:s" }} IST
+─────────────────────────────────────────────────────────────

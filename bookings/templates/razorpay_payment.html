@@ -1,0 +1,121 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% block title %}Complete Payment - Booking {{ booking.booking_number }}{% endblock %}
+{% block extra_head %}
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<meta name="csrf-token" content="{{ csrf_token }}">
+{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="text-center mb-5">
+                <h1 class="display-6 fw-bold text-primary"><i class="fas fa-lock me-2"></i>Secure Payment</h1>
+                <p class="lead">Complete your booking: <strong>{{ booking.booking_number }}</strong></p>
+            </div>
+            <div class="card border-0 shadow mb-4">
+                <div class="card-body">
+                    <h5>{{ booking.showtime.movie.title|escape }}</h5>
+                    <p class="text-muted mb-1">{{ booking.showtime.get_formatted_date }} at {{ booking.showtime.get_formatted_time }}</p>
+                    <p class="text-muted">Seats: {{ booking.get_seats_display }}</p>
+                    <h3 class="text-success">₹{{ booking.total_amount }}</h3>
+                </div>
+            </div>
+            <div class="card border-0 shadow">
+                <div class="card-body text-center py-4">
+                    <button id="rzp-button" class="btn btn-success btn-lg px-5">Pay ₹{{ booking.total_amount }}</button>
+                    <p class="text-muted small mt-3">
+                        <i class="fas fa-shield-alt me-1"></i>
+                        Secured by Razorpay. Your payment details are encrypted.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Payment data passed securely via data attributes -->
+<div id="payment-config" 
+     data-key="{{ razorpay_key_id|escapejs }}"
+     data-amount="{{ amount|escapejs }}"
+     data-currency="{{ currency|escapejs }}"
+     data-order-id="{{ order_id|escapejs }}"
+     data-success-url="{% url 'payment_success' booking.id %}"
+     data-prefill-name="{{ user.get_full_name|default:user.username|escapejs }}"
+     data-prefill-email="{{ user.email|escapejs }}"
+     style="display: none;">
+</div>
+
+<script>
+(function() {
+    'use strict';
+    
+    // Get config from data attributes (safely escaped by Django)
+    const config = document.getElementById('payment-config');
+    if (!config) {
+        console.error('Payment configuration not found');
+        return;
+    }
+    
+    const successUrl = config.dataset.successUrl;
+    
+    // Validate required fields
+    const requiredFields = ['key', 'amount', 'currency', 'orderId', 'successUrl'];
+    for (const field of requiredFields) {
+        if (!config.dataset[field] && !successUrl) {
+            console.error(`Missing required field: ${field}`);
+            return;
+        }
+    }
+    
+    const options = {
+        "key": config.dataset.key,
+        "amount": config.dataset.amount,
+        "currency": config.dataset.currency,
+        "name": "BookMyshowClone",
+        "description": "Movie Ticket Booking",
+        "order_id": config.dataset.orderId,
+        "handler": function(response) {
+            // Validate response before redirect
+            if (!response.razorpay_payment_id || !response.razorpay_order_id || !response.razorpay_signature) {
+                alert('Invalid payment response. Please contact support.');
+                return;
+            }
+            
+            // Use encodeURIComponent to prevent injection
+            const params = new URLSearchParams({
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_signature: response.razorpay_signature
+            });
+            
+            window.location.href = successUrl + '?' + params.toString();
+        },
+        "prefill": {
+            "name": config.dataset.prefillName || '',
+            "email": config.dataset.prefillEmail || ''
+        },
+        "theme": {
+            "color": "#0d6efd"
+        },
+        "modal": {
+            "ondismiss": function() {
+                console.log('Payment modal closed');
+            }
+        }
+    };
+    
+    const rzp = new Razorpay(options);
+    
+    rzp.on('payment.failed', function(response) {
+        console.error('Payment failed:', response.error.code);
+        alert('Payment failed. Please try again or contact support.');
+    });
+    
+    document.getElementById('rzp-button').addEventListener('click', function(e) {
+        e.preventDefault();
+        rzp.open();
+    });
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard API Debug Tool</title>
+    <style>
+        :root {
+            --primary: #00D9FF;
+            --secondary: #FFD60A;
+            --accent: #FF006E;
+            --dark: #0A0E27;
+            --dark-surface: #1A1F3A;
+            --light-text: #E0F7FF;
+            --success: #00D084;
+            --error: #FF4757;
+            --warning: #FFA502;
+            --info: #00D9FF;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(45deg, #0A0E27 0%, #1A1F3A 25%, #0F1729 50%, #1A1F3A 75%, #0A0E27 100%);
+            background-attachment: fixed;
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            color: var(--light-text);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 20% 50%, rgba(0, 217, 255, 0.08) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(255, 102, 110, 0.08) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .section {
+            background: linear-gradient(135deg, rgba(26, 31, 58, 0.9) 0%, rgba(15, 23, 41, 0.95) 100%);
+            padding: 24px;
+            margin: 20px 0;
+            border-radius: 12px;
+            box-shadow: 0 0 30px rgba(0, 217, 255, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(0, 217, 255, 0.2);
+            backdrop-filter: blur(10px);
+            position: relative;
+            z-index: 1;
+        }
+
+        h1 { 
+            font-family: 'Courier New', monospace;
+            font-size: 2.5rem;
+            font-weight: 900;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #00D9FF 0%, #FFD60A 50%, #FF006E 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(0, 217, 255, 0.3);
+            animation: textGlow 2s ease-in-out infinite;
+        }
+
+        @keyframes textGlow {
+            0%, 100% { filter: drop-shadow(0 0 10px rgba(0, 217, 255, 0.4)); }
+            50% { filter: drop-shadow(0 0 20px rgba(255, 102, 110, 0.4)); }
+        }
+
+        h2 { 
+            font-family: 'Courier New', monospace;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #FFD60A;
+            margin-top: 0;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-shadow: 0 0 15px rgba(255, 214, 10, 0.3);
+        }
+
+        .status { 
+            padding: 12px 16px;
+            margin: 10px 0; 
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .success { 
+            background: linear-gradient(135deg, rgba(0, 208, 132, 0.15) 0%, rgba(0, 208, 132, 0.05) 100%);
+            color: #00FF85;
+            border: 1px solid rgba(0, 208, 132, 0.4);
+            box-shadow: 0 0 15px rgba(0, 208, 132, 0.15);
+        }
+
+        .error { 
+            background: linear-gradient(135deg, rgba(255, 71, 87, 0.15) 0%, rgba(255, 71, 87, 0.05) 100%);
+            color: #FF6B7A;
+            border: 1px solid rgba(255, 71, 87, 0.4);
+            box-shadow: 0 0 15px rgba(255, 71, 87, 0.15);
+        }
+
+        .info { 
+            background: linear-gradient(135deg, rgba(0, 217, 255, 0.15) 0%, rgba(0, 217, 255, 0.05) 100%);
+            color: #00FFFF;
+            border: 1px solid rgba(0, 217, 255, 0.4);
+            box-shadow: 0 0 15px rgba(0, 217, 255, 0.15);
+        }
+
+        button {
+            background: linear-gradient(135deg, #00D9FF 0%, #FF006E 100%);
+            color: #0A0E27;
+            border: 2px solid transparent;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 8px 5px;
+            font-weight: 700;
+            font-family: 'Courier New', monospace;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9rem;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 0 20px rgba(0, 217, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 0 30px rgba(0, 217, 255, 0.5), 0 0 60px rgba(255, 0, 110, 0.2);
+            border-color: rgba(255, 214, 10, 0.5);
+        }
+
+        button:hover::before {
+            left: 100%;
+        }
+
+        button:active {
+            transform: translateY(-1px) scale(0.98);
+        }
+
+        pre {
+            background: linear-gradient(135deg, rgba(10, 14, 39, 0.95) 0%, rgba(26, 31, 58, 0.9) 100%);
+            padding: 18px;
+            border-radius: 8px;
+            overflow-x: auto;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 2px solid rgba(0, 217, 255, 0.25);
+            color: #00FF85;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            letter-spacing: 0.5px;
+            box-shadow: 0 0 20px rgba(0, 217, 255, 0.1), inset 0 0 20px rgba(0, 217, 255, 0.05);
+        }
+
+        pre::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        pre::-webkit-scrollbar-track {
+            background: rgba(0, 217, 255, 0.05);
+        }
+
+        pre::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #00D9FF, #FF006E);
+            border-radius: 4px;
+        }
+
+        .endpoint {
+            background: linear-gradient(135deg, rgba(0, 217, 255, 0.1) 0%, rgba(255, 0, 110, 0.05) 100%);
+            padding: 16px;
+            margin: 12px 0;
+            border-left: 4px solid #00D9FF;
+            border-radius: 6px;
+            color: #E0F7FF;
+            font-family: 'Courier New', monospace;
+            box-shadow: 0 0 15px rgba(0, 217, 255, 0.1);
+            border-top: 1px solid rgba(255, 214, 10, 0.1);
+            position: relative;
+        }
+
+        .endpoint strong {
+            color: #FFD60A;
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+
+        .endpoint small {
+            color: #00FFFF;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+        }
+    </style>
+
+        .endpoint {
+            background: rgba(124, 58, 237, 0.1);
+            padding: 10px;
+            margin: 10px 0;
+            border-left: 4px solid var(--primary);
+            border-radius: 4px;
+            color: var(--light-text);
+        }
+</head>
+<body>
+    <h1>🔍 Dashboard API Debug Tool</h1>
+    
+    <div class="section">
+        <h2>Authentication Status</h2>
+        <div id="authStatus" class="status info">Checking authentication...</div>
+        <button onclick="checkAuth()">Recheck Auth</button>
+        <button onclick="window.location.href='/custom-admin/login/'">Go to Login</button>
+    </div>
+
+    <div class="section">
+        <h2>API Endpoint Tests</h2>
+        <button onclick="testAllAPIs()">Test All APIs</button>
+        <button onclick="clearResults()">Clear Results</button>
+        <div id="apiResults"></div>
+    </div>
+
+    <div class="section">
+        <h2>Individual API Tests</h2>
+        <button onclick="testAPI('/custom-admin/api/filter-options/')">Test Filter Options</button>
+        <button onclick="testAPI('/custom-admin/api/stats/')">Test Stats</button>
+        <button onclick="testAPI('/custom-admin/api/revenue/?days=30')">Test Revenue</button>
+        <button onclick="testAPI('/custom-admin/api/bookings/')">Test Bookings</button>
+        <button onclick="testAPI('/custom-admin/api/theaters/')">Test Theaters</button>
+    </div>
+
+    <div class="section">
+        <h2>Console Logs</h2>
+        <pre id="console"></pre>
+    </div>
+
+    <script>
+        const consoleDiv = document.getElementById('console');
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const color = type === 'error' ? 'red' : type === 'success' ? 'green' : 'black';
+            consoleDiv.innerHTML += `<span style="color: ${color}">[${timestamp}] ${message}</span>\n`;
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+            console.log(message);
+        }
+
+        async function checkAuth() {
+            log('Checking authentication status...');
+            const authDiv = document.getElementById('authStatus');
+            
+            try {
+                const response = await fetch('/custom-admin/', {
+                    credentials: 'include',
+                    redirect: 'manual'
+                });
+                
+                log(`Dashboard response status: ${response.status}`);
+                
+                if (response.status === 200) {
+                    authDiv.className = 'status success';
+                    authDiv.textContent = '✓ Authenticated - You are logged in!';
+                    log('✓ User is authenticated', 'success');
+                } else if (response.status === 0 || response.type === 'opaqueredirect') {
+                    authDiv.className = 'status error';
+                    authDiv.textContent = '✗ Not authenticated - Please login first';
+                    log('✗ User is not authenticated (redirect detected)', 'error');
+                } else {
+                    authDiv.className = 'status error';
+                    authDiv.textContent = `✗ Unexpected status: ${response.status}`;
+                    log(`✗ Unexpected status: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                authDiv.className = 'status error';
+                authDiv.textContent = '✗ Error checking authentication: ' + error.message;
+                log('✗ Error: ' + error.message, 'error');
+            }
+        }
+
+        async function testAPI(endpoint) {
+            log(`\nTesting endpoint: ${endpoint}`);
+            const resultsDiv = document.getElementById('apiResults');
+            
+            const endpointDiv = document.createElement('div');
+            endpointDiv.className = 'endpoint';
+            endpointDiv.innerHTML = `<strong>${endpoint}</strong><br>Testing...`;
+            resultsDiv.appendChild(endpointDiv);
+            
+            try {
+                const startTime = Date.now();
+                const response = await fetch(endpoint, {
+                    credentials: 'include'
+                });
+                const duration = Date.now() - startTime;
+                
+                log(`Response status: ${response.status} (${duration}ms)`);
+                
+                if (response.status === 200) {
+                    const data = await response.json();
+                    const dataStr = JSON.stringify(data, null, 2);
+                    endpointDiv.className = 'endpoint';
+                    endpointDiv.innerHTML = `
+                        <strong>✓ ${endpoint}</strong><br>
+                        <small>Status: 200 OK (${duration}ms)</small>
+                        <pre>${dataStr.substring(0, 500)}${dataStr.length > 500 ? '...' : ''}</pre>
+                    `;
+                    log(`✓ Success! Data length: ${dataStr.length} chars`, 'success');
+                } else {
+                    const text = await response.text();
+                    endpointDiv.innerHTML = `
+                        <strong>✗ ${endpoint}</strong><br>
+                        <small style="color: red;">Status: ${response.status} (${duration}ms)</small>
+                        <pre>${text.substring(0, 500)}</pre>
+                    `;
+                    log(`✗ Failed with status ${response.status}`, 'error');
+                }
+            } catch (error) {
+                endpointDiv.innerHTML = `
+                    <strong>✗ ${endpoint}</strong><br>
+                    <small style="color: red;">Error: ${error.message}</small>
+                `;
+                log(`✗ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testAllAPIs() {
+            clearResults();
+            log('\n=== Testing All APIs ===\n');
+            
+            const endpoints = [
+                '/custom-admin/api/filter-options/',
+                '/custom-admin/api/stats/',
+                '/custom-admin/api/revenue/?days=30',
+                '/custom-admin/api/bookings/',
+                '/custom-admin/api/theaters/'
+            ];
+            
+            for (const endpoint of endpoints) {
+                await testAPI(endpoint);
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+            
+            log('\n=== All tests completed ===\n', 'success');
+        }
+
+        function clearResults() {
+            document.getElementById('apiResults').innerHTML = '';
+            consoleDiv.innerHTML = '';
+            log('Results cleared');
+        }
+
+        // Auto-check auth on load
+        window.addEventListener('load', () => {
+            log('Debug tool loaded');
+            checkAuth();
+        });
+    </script>
+</body>
+</html>

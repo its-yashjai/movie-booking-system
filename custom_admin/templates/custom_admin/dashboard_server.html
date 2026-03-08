@@ -1,0 +1,304 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - BookMyshowClone</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <link href="{% static 'custom_admin/css/dashboard.css' %}" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{% url 'custom_admin:dashboard' %}">
+                <i class="fas fa-film me-2"></i>BookMyshowClone Admin
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <span style="color: #E5E7EB; font-size: 14px; margin-right: 20px;">
+                            <i class="fas fa-user-circle me-2"></i>{{ user.username }}
+                        </span>
+                    </li>
+                    <li class="nav-item">
+                        <a class="btn-logout" href="{% url 'custom_admin:logout' %}">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span class="d-none d-sm-inline">Logout</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-main">
+        <div class="page-header">
+            <h1><i class="fas fa-chart-bar me-2"></i>Dashboard</h1>
+        </div>
+
+        <!-- Filter Form -->
+        <div style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(30, 41, 59, 0.6) 100%); padding: 20px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); border: 1px solid rgba(124, 58, 237, 0.15);">
+            <form method="get" action="{% url 'custom_admin:dashboard' %}">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold" style="color: #E5E7EB;"><i class="fas fa-film me-1"></i>Filter by Movie</label>
+                        <select name="movie_id" class="form-select" style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(124, 58, 237, 0.2); color: #E5E7EB;">
+                            <option value="" style="background: #1F2937; color: #E5E7EB;">All Movies</option>
+                            {% for movie in all_movies %}
+                                <option value="{{ movie.id }}" {% if movie.id|stringformat:"s" == selected_movie_id %}selected{% endif %} style="background: #1F2937; color: #E5E7EB;">
+                                    {{ movie.title }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold" style="color: #E5E7EB;"><i class="fas fa-building me-1"></i>Filter by Theater</label>
+                        <select name="theater_id" class="form-select" style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(124, 58, 237, 0.2); color: #E5E7EB;">
+                            <option value="" style="background: #1F2937; color: #E5E7EB;">All Theaters</option>
+                            {% for theater in all_theaters %}
+                                <option value="{{ theater.id }}" {% if theater.id|stringformat:"s" == selected_theater_id %}selected{% endif %} style="background: #1F2937; color: #E5E7EB;">
+                                    {{ theater.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold" style="color: #E5E7EB;"><i class="fas fa-calendar me-1"></i>Period</label>
+                        <select name="period" class="form-select" id="periodSelect" style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(124, 58, 237, 0.2); color: #E5E7EB;">
+                            <option value="all" {% if selected_period == 'all' %}selected{% endif %} style="background: #1F2937; color: #E5E7EB;">All Time</option>
+                            <option value="today" {% if selected_period == 'today' %}selected{% endif %} style="background: #1F2937; color: #E5E7EB;">Today</option>
+                            <option value="week" {% if selected_period == 'week' %}selected{% endif %} style="background: #1F2937; color: #E5E7EB;">Last 7 Days</option>
+                            <option value="month" {% if selected_period == 'month' %}selected{% endif %} style="background: #1F2937; color: #E5E7EB;">Last 30 Days</option>
+                            <!-- <option value="custom" {% if date_from and date_to %}selected{% endif %}>Custom Range</option> -->
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-search me-1"></i>Apply Filters
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Custom Date Range (shown when custom is selected) -->
+                <div id="customDateRange" class="row g-3 mt-2" style="display: {% if date_from and date_to %}block{% else %}none{% endif %};">
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold" style="color: #E5E7EB;">From Date</label>
+                        <input type="date" name="date_from" class="form-select" value="{{ date_from }}" style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(124, 58, 237, 0.2); color: #E5E7EB;">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold" style="color: #E5E7EB;">To Date</label>
+                        <input type="date" name="date_to" class="form-select" value="{{ date_to }}" style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(124, 58, 237, 0.2); color: #E5E7EB;">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">&nbsp;</label>
+                        <a href="{% url 'custom_admin:dashboard' %}" class="btn btn-secondary w-100">
+                            <i class="fas fa-redo me-1"></i>Reset All Filters
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid-2">
+            <div class="card stat-card primary">
+                <div class="stat-label"><i class="fas fa-dollar-sign me-1"></i>Total Revenue</div>
+                <div class="stat-value">₹{{ total_revenue|floatformat:0 }}</div>
+                <small style="color: #9CA3AF;">All time</small>
+            </div>
+            <div class="card stat-card success">
+                <div class="stat-label"><i class="fas fa-shopping-cart me-1"></i>Total Bookings</div>
+                <div class="stat-value">{{ total_bookings }}</div>
+                <small style="color: #9CA3AF;">All time</small>
+            </div>
+            <div class="card stat-card info">
+                <div class="stat-label"><i class="fas fa-calendar-today me-1"></i>{{ period_label }} Revenue</div>
+                <div class="stat-value">₹{{ period_revenue|floatformat:0 }}</div>
+                <small style="color: #9CA3AF;">{{ period_label }}</small>
+            </div>
+            <div class="card stat-card warning">
+                <div class="stat-label"><i class="fas fa-ticket-alt me-1"></i>{{ period_label }} Bookings</div>
+                <div class="stat-value">{{ period_bookings }}</div>
+                <small style="color: #9CA3AF;">{{ period_label }}</small>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="grid-2">
+            <div class="card">
+                <div class="card-header">
+                    <h6><i class="fas fa-chart-line me-2"></i>Revenue (30 Days)</h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="revenueChart" height="300"></canvas>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header">
+                    <h6><i class="fas fa-film me-2"></i>Top Movies</h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="moviesChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Row -->
+        <div class="grid-2">
+            <div class="card">
+                <div class="card-header">
+                    <h6><i class="fas fa-building me-2"></i>Top Theaters</h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="theatersChart" height="300"></canvas>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header">
+                    <h6><i class="fas fa-history me-2"></i>Recent Bookings</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover">
+                            <thead>
+                                <tr>
+                                    <th><i class="fas fa-user me-1"></i>User</th>
+                                    <th><i class="fas fa-video me-1"></i>Movie</th>
+                                    <th class="text-end"><i class="fas fa-rupee-sign me-1"></i>Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if recent_bookings %}
+                                    {% for booking in recent_bookings %}
+                                        <tr>
+                                            <td><strong>{{ booking.user.username }}</strong></td>
+                                            <td>{{ booking.showtime.movie.title|truncatechars:30 }}</td>
+                                            <td class="text-end">₹{{ booking.total_amount|floatformat:0 }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="3" class="text-center" style="color: #6B7280; padding: 2rem;">No bookings found</td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Show/hide custom date range -->
+    <script>
+        document.getElementById('periodSelect').addEventListener('change', function() {
+            const customRange = document.getElementById('customDateRange');
+            customRange.style.display = this.value === 'custom' ? 'block' : 'none';
+        });
+    </script>
+
+    <!-- Render Charts -->
+    <script>
+        // Revenue Chart
+        const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+        new Chart(revenueCtx, {
+            type: 'line',
+            data: {
+                labels: [{% for item in revenue_data %}'{{ item.date }}'{% if not forloop.last %},{% endif %}{% endfor %}],
+                datasets: [{
+                    label: 'Revenue (₹)',
+                    data: [{% for item in revenue_data %}{{ item.revenue }}{% if not forloop.last %},{% endif %}{% endfor %}],
+                    borderColor: '#667eea',
+                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: true },
+                    tooltip: {
+                        callbacks: {
+                            label: (context) => 'Revenue: ₹' + context.parsed.y.toLocaleString('en-IN')
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: (v) => v >= 1000 ? '₹' + (v / 1000).toFixed(0) + 'k' : '₹' + v
+                        }
+                    }
+                }
+            }
+        });
+
+        // Movies Chart
+        const moviesCtx = document.getElementById('moviesChart').getContext('2d');
+        new Chart(moviesCtx, {
+            type: 'bar',
+            data: {
+                labels: [{% for movie in top_movies %}'{{ movie.title|truncatechars:20 }}'{% if not forloop.last %},{% endif %}{% endfor %}],
+                datasets: [{
+                    label: 'Bookings',
+                    data: [{% for movie in top_movies %}{{ movie.booking_count }}{% if not forloop.last %},{% endif %}{% endfor %}],
+                    backgroundColor: '#1cc88a'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y',
+                plugins: { legend: { display: true } },
+                scales: { x: { beginAtZero: true } }
+            }
+        });
+
+        // Theaters Chart
+        const theatersCtx = document.getElementById('theatersChart').getContext('2d');
+        new Chart(theatersCtx, {
+            type: 'bar',
+            data: {
+                labels: [{% for theater in top_theaters %}'{{ theater.name|truncatechars:20 }}'{% if not forloop.last %},{% endif %}{% endfor %}],
+                datasets: [{
+                    label: 'Revenue (₹)',
+                    data: [{% for theater in top_theaters %}{{ theater.revenue|default:0 }}{% if not forloop.last %},{% endif %}{% endfor %}],
+                    backgroundColor: '#36b9cc'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y',
+                plugins: {
+                    legend: { display: true },
+                    tooltip: {
+                        callbacks: {
+                            label: (context) => 'Revenue: ₹' + context.parsed.x.toLocaleString('en-IN')
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: (v) => v >= 1000 ? '₹' + (v / 1000).toFixed(0) + 'k' : '₹' + v
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

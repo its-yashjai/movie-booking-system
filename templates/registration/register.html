@@ -1,0 +1,117 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Register - BookMyshowClone{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="auth-container-bms">
+                <div class="auth-header-bms">
+                    <h2><i class="fas fa-user-plus me-2"></i>Sign Up</h2>
+                    <p class="mb-0">Create your account to start booking movies</p>
+                </div>
+                <div class="auth-body-bms">
+                    <form method="post" id="registerForm">
+                        {% csrf_token %}
+                        
+                        {% if form.errors %}
+                        <div class="alert alert-danger">
+                            {% for field, errors in form.errors.items %}
+                                {% for error in errors %}
+                                    <p class="mb-1">{{ error }}</p>
+                                {% endfor %}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.username.id_for_label }}" class="form-label form-label-bms">Username</label>
+                            {{ form.username }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.email.id_for_label }}" class="form-label form-label-bms">Email</label>
+                            {{ form.email }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.password1.id_for_label }}" class="form-label form-label-bms">Password</label>
+                            {{ form.password1 }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.password2.id_for_label }}" class="form-label form-label-bms">Confirm Password</label>
+                            {{ form.password2 }}
+                        </div>
+                        
+                        <button type="submit" class="btn btn-bms-primary w-100 mb-3" id="registerBtn">
+                            <span class="btn-text">
+                                <i class="fas fa-user-plus me-2"></i>Create Account
+                            </span>
+                            <span class="btn-loading" style="display: none;">
+                                <i class="fas fa-spinner fa-spin me-2"></i>Creating account...
+                            </span>
+                        </button>
+                        
+                        <div class="text-center">
+                            <p>Already have an account? <a href="{% url 'login' %}" class="text-bms-red">Sign In</a></p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const registerForm = document.getElementById('registerForm');
+    const registerBtn = document.getElementById('registerBtn');
+    const btnText = registerBtn.querySelector('.btn-text');
+    const btnLoading = registerBtn.querySelector('.btn-loading');
+    
+    registerForm.addEventListener('submit', function(e) {
+        // Show loading state
+        btnText.style.display = 'none';
+        btnLoading.style.display = 'inline-block';
+        registerBtn.disabled = true;
+        
+        // Add loading class for visual feedback
+        registerBtn.classList.add('btn-loading-state');
+        
+        // Optional: Add timeout to prevent indefinite loading
+        setTimeout(() => {
+            if (registerBtn.disabled) {
+                btnText.style.display = 'inline-block';
+                btnLoading.style.display = 'none';
+                registerBtn.disabled = false;
+                registerBtn.classList.remove('btn-loading-state');
+            }
+        }, 15000); // 15 seconds timeout for registration (email sending)
+    });
+});
+</script>
+
+<style>
+/* Style the Django form fields */
+#id_username, #id_email, #id_password1, #id_password2 {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+#id_username:focus, #id_email:focus, #id_password1:focus, #id_password2:focus {
+    border-color: #f84464;
+    box-shadow: 0 0 0 0.2rem rgba(248, 68, 100, 0.25);
+}
+
+.btn-loading-state {
+    opacity: 0.8;
+    cursor: not-allowed !important;
+}
+</style>
+{% endblock %}

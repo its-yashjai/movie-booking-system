@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome - Movie Booking System</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background-color: #f4f4f7;
+            line-height: 1.6;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #ffffff;
+            padding: 50px 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0 0 15px 0;
+            font-size: 36px;
+        }
+        .content {
+            padding: 40px 30px;
+        }
+        .feature-box {
+            background: #f7fafc;
+            padding: 25px;
+            margin: 20px 0;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+        }
+        .feature-icon {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        .button {
+            display: inline-block;
+            padding: 15px 35px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            margin: 20px 0;
+        }
+        .footer {
+            background-color: #2d3748;
+            color: #ffffff;
+            padding: 30px;
+            text-align: center;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <h1>🎬 Welcome to Movie Booking!</h1>
+            <p style="font-size: 18px; opacity: 0.95;">
+                Your journey to amazing movie experiences starts here
+            </p>
+        </div>
+        
+        <div class="content">
+            <p style="font-size: 20px; color: #2d3748; margin-bottom: 20px;">
+                Hello <strong>{{ user.get_full_name|default:user.username }}</strong>! 👋
+            </p>
+            
+            <p style="color: #4a5568; font-size: 16px;">
+                Thank you for joining Movie Booking System! We're excited to help you discover and book 
+                tickets for the latest movies.
+            </p>
+            
+            <div class="feature-box">
+                <div class="feature-icon">🎟️</div>
+                <h3 style="color: #2d3748; margin: 10px 0;">Easy Booking</h3>
+                <p style="color: #718096; margin: 0;">
+                    Browse movies, select your favorite seats, and book tickets in just a few clicks.
+                </p>
+            </div>
+            
+            <div class="feature-box">
+                <div class="feature-icon">🎫</div>
+                <h3 style="color: #2d3748; margin: 10px 0;">Digital Tickets</h3>
+                <p style="color: #718096; margin: 0;">
+                    Receive instant QR code tickets via email. No need to print!
+                </p>
+            </div>
+            
+            <div class="feature-box">
+                <div class="feature-icon">💳</div>
+                <h3 style="color: #2d3748; margin: 10px 0;">Secure Payments</h3>
+                <p style="color: #718096; margin: 0;">
+                    Pay safely with multiple payment options powered by Razorpay.
+                </p>
+            </div>
+            
+            <div style="text-align: center; margin: 40px 0;">
+                <a href="#" class="button">Browse Movies Now</a>
+            </div>
+            
+            <p style="color: #718096; font-size: 14px; margin-top: 30px; text-align: center;">
+                If you have any questions, we're here to help!
+            </p>
+        </div>
+        
+        <div class="footer">
+            <p style="margin-bottom: 15px; font-size: 16px; font-weight: 600;">
+                Movie Booking System
+            </p>
+            <p style="opacity: 0.9;">
+                Your trusted partner for movie tickets
+            </p>
+            <p style="font-size: 12px; opacity: 0.8; margin-top: 20px;">
+                © 2026 Movie Booking System. All rights reserved.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,15 @@
+Account Deactivated
+
+Hello {{ username }},
+
+Your MovieBooking account has been successfully deactivated.
+
+Your data will be retained for 30 days. If you want to permanently delete your account, please let us know.
+
+To reactivate your account at any time, visit:
+{{ reactivate_link }}
+
+We'd love to have you back! If you have any feedback on why you're leaving, please let us know at support@moviebooking.com
+
+Best regards,
+The MovieBooking Team

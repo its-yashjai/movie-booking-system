@@ -1,0 +1,140 @@
+<div class="col-md-3 col-lg-2 p-3" style="background: var(--surface-light); border-radius: 8px; border: 1px solid rgba(229, 9, 20, 0.1);">
+    <div class="sticky-top" style="top: 80px; z-index: 100;">
+        <h4 class="d-flex align-items-center mb-3" style="color: var(--text-white);">
+            <i class="fas fa-filter me-2" style="color: var(--primary-accent);"></i>
+            <span>Filters</span>
+        </h4>
+        <hr class="my-3" style="border-color: rgba(229, 9, 20, 0.2);">
+        
+        <!-- Search -->
+        <div class="mb-4">
+            <h6 class="text-uppercase fw-600 mb-3" style="color: rgba(255, 255, 255, 0.6);">
+                <i class="fas fa-search me-1"></i>Search
+            </h6>
+            <form method="GET" action="{% url 'movie_list' %}" id="searchForm">
+                <input type="hidden" name="genre" value="{{ selected_genre }}">
+                <input type="hidden" name="language" value="{{ selected_language }}">
+                <div class="input-group">
+                    <input type="text" name="q" class="form-control form-control-sm" 
+                           placeholder="Search movies..." value="{{ query }}" 
+                           style="border-radius: 6px 0 0 6px; background: var(--surface-dark); color: var(--text-white); border: 1px solid rgba(229, 9, 20, 0.2);">
+                    <button class="btn btn-sm" type="submit"
+                            style="border-radius: 0 6px 6px 0; background: var(--primary-accent); color: white; border: 1px solid var(--primary-accent);">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </form>
+        </div>        
+        <!-- Genres -->
+        <div class="mb-4">
+            <h6 class="text-uppercase fw-600 mb-3" style="color: rgba(255, 255, 255, 0.6);">
+                <i class="fas fa-film me-1"></i>Genres
+            </h6>
+            <div class="list-group list-group-flush" style="border-radius: 6px;">
+                <a href="javascript:void(0)" onclick="filterMovies('', '{{ selected_language }}', '{{ query }}')"
+                   class="list-group-item list-group-item-action py-2 px-3 border-0 filter-item {% if not selected_genre %}filter-active{% endif %}"
+                   style="border-radius: 6px; margin-bottom: 2px;">
+                    <i class="fas fa-globe me-2"></i>All Genres
+                </a>
+                {% for genre in genres %}
+                <a href="javascript:void(0)" onclick="filterMovies('{{ genre.slug }}', '{{ selected_language }}', '{{ query }}')"
+                   class="list-group-item list-group-item-action py-2 px-3 border-0 filter-item {% if selected_genre == genre.slug %}filter-active{% endif %}"
+                   style="border-radius: 6px; margin-bottom: 2px;">
+                    <i class="{{ genre.icon }} me-2 small"></i>{{ genre.name }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Languages -->
+        <div class="mb-4">
+            <h6 class="text-uppercase fw-600 mb-3" style="color: rgba(255, 255, 255, 0.6);">
+                <i class="fas fa-language me-1"></i>Languages
+            </h6>
+            <div class="list-group list-group-flush" style="border-radius: 6px;">
+                <a href="javascript:void(0)" onclick="filterMovies('{{ selected_genre }}', '', '{{ query }}')"
+                   class="list-group-item list-group-item-action py-2 px-3 border-0 filter-item {% if not selected_language %}filter-active{% endif %}"
+                   style="border-radius: 6px; margin-bottom: 2px;">
+                    <i class="fas fa-globe me-2"></i>All Languages
+                </a>
+                {% for language in languages %}
+                <a href="javascript:void(0)" onclick="filterMovies('{{ selected_genre }}', '{{ language.code }}', '{{ query }}')"
+                   class="list-group-item list-group-item-action py-2 px-3 border-0 filter-item {% if selected_language == language.code %}filter-active{% endif %}"
+                   style="border-radius: 6px; margin-bottom: 2px;">
+                    <i class="fas fa-flag me-2 small"></i>{{ language.name }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>        
+        <!-- Clear Filters -->
+        {% if selected_genre or selected_language or query %}
+        <div class="d-grid gap-2 mb-3">
+            <a href="{% url 'movie_list' %}" class="btn btn-sm" style="background: rgba(229, 9, 20, 0.2); color: var(--primary-accent); border: 1px solid rgba(229, 9, 20, 0.3);">
+                <i class="fas fa-times me-2"></i>Clear All Filters
+            </a>
+        </div>
+        {% endif %}
+
+        <!-- Active Filters Display -->
+        {% if selected_genre or selected_language %}
+        <div class="mb-3">
+            <h6 class="text-uppercase fw-600 mb-2" style="color: rgba(255, 255, 255, 0.6);">
+                <i class="fas fa-tags me-1"></i>Active Filters
+            </h6>
+            <div class="d-flex flex-wrap gap-2">
+                {% if selected_genre %}
+                <span class="badge d-inline-flex align-items-center" style="background: rgba(229, 9, 20, 0.3); color: var(--primary-accent);">
+                    Genre: {% for genre in genres %}{% if genre.slug == selected_genre %}{{ genre.name }}{% endif %}{% endfor %}
+                    <button onclick="filterMovies('', '{{ selected_language }}', '{{ query }}')" 
+                            class="btn-close ms-2" 
+                            style="font-size: 0.6rem; background: transparent; color: var(--primary-accent);" aria-label="Remove genre filter"></button>
+                </span>
+                {% endif %}
+                {% if selected_language %}
+                <span class="badge d-inline-flex align-items-center" style="background: rgba(0, 168, 232, 0.3); color: var(--tertiary-accent);">
+                    Language: {% for language in languages %}{% if language.code == selected_language %}{{ language.name }}{% endif %}{% endfor %}
+                    <button onclick="filterMovies('{{ selected_genre }}', '', '{{ query }}')" 
+                            class="btn-close ms-2" 
+                            style="font-size: 0.6rem; background: transparent; color: var(--tertiary-accent);" aria-label="Remove language filter"></button>
+                </span>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.filter-item {
+    background: transparent !important;
+    color: rgba(255, 255, 255, 0.7) !important;
+    transition: all 0.3s ease;
+}
+
+.filter-item:hover {
+    background: rgba(229, 9, 20, 0.1) !important;
+    color: var(--text-white) !important;
+}
+
+.filter-active {
+    background: var(--primary-accent) !important;
+    color: white !important;
+}
+</style>
+
+<script>
+function filterMovies(genre, language, query) {
+    let url = "{% url 'movie_list' %}";
+    let params = new URLSearchParams();
+    
+    if (genre) params.append('genre', genre);
+    if (language) params.append('language', language);
+    if (query) params.append('q', query);
+    
+    if (params.toString()) {
+        url += '?' + params.toString();
+    }
+    
+    window.location.href = url;
+}
+</script>
