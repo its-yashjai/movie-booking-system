@@ -25,6 +25,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy project
 COPY . .
 
+# Copy entrypoint script
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
 # Create staticfiles directory
 RUN mkdir -p staticfiles media
 
@@ -34,6 +38,5 @@ RUN python manage.py collectstatic --noinput || true
 # Expose port
 EXPOSE 8000
 
-# Run migrations on startup, then start server
-# Note: Superuser creation and admin verification only happen if needed (via management commands with safety checks)
-CMD ["sh", "-c", "python manage.py migrate && python manage.py createcachetable 2>/dev/null || true && gunicorn moviebooking.wsgi:application --bind 0.0.0.0:${PORT:-8000} --timeout 120 --workers 3"]
+# Run migrations + createcachetable, then start server
+CMD ["/entrypoint.sh"]

@@ -84,7 +84,12 @@ class SeatManager:
             
             cache.set(cache_key, available_seats, timeout=30)
         
-        return available_seats
+        # CRITICAL: Also remove temporarily reserved seats from the available list
+        # These are seats reserved in cache but not yet in a PENDING booking
+        reserved_seats = SeatManager.get_reserved_seats(showtime_id)
+        available_seats_filtered = [s for s in available_seats if s not in reserved_seats]
+        
+        return available_seats_filtered
     
     @staticmethod
     def get_reserved_seats(showtime_id):

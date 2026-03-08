@@ -106,7 +106,7 @@ else:
             "ENGINE": "django.db.backends.sqlite3",
             "NAME": BASE_DIR / "db.sqlite3",
             "OPTIONS": {
-                "timeout": 20,  # Wait up to 20 seconds for locks to be released
+                "timeout": 30,  # Wait up to 30 seconds for locks to be released
             },
         }
     }
@@ -118,9 +118,11 @@ else:
 
         if connection.vendor == 'sqlite':
             cursor = connection.cursor()
-            cursor.execute('PRAGMA journal_mode=WAL;')
-            cursor.execute('PRAGMA synchronous=NORMAL;')  # Faster writes with WAL
-            cursor.execute('PRAGMA busy_timeout=20000;')  # 20 second timeout
+            cursor.execute('PRAGMA journal_mode=WAL;')       # WAL mode: readers don't block writers
+            cursor.execute('PRAGMA synchronous=NORMAL;')     # Faster writes with WAL
+            cursor.execute('PRAGMA busy_timeout=30000;')     # 30 second busy wait (ms)
+            cursor.execute('PRAGMA cache_size=-64000;')      # 64MB page cache
+            cursor.execute('PRAGMA temp_store=MEMORY;')      # Temp tables in memory
             cursor.close()
 
 if not DEBUG:
@@ -274,7 +276,8 @@ CLOUDINARY_STORAGE = {
 }
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
-REDIS_URL = os.environ.get('REDIS_URL', 'redis://127.0.0.1:6379/1')
+# REDIS_URL is already read at the top for cache config (line ~129)
+# Do not re-define it here with a different default
 
 RAZORPAY_KEY_ID = os.environ.get('RAZORPAY_KEY_ID', '')
 RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET', '')
@@ -287,7 +290,7 @@ if SENDGRID_API_KEY:
     ANYMAIL = {
         'SENDGRID_API_KEY': SENDGRID_API_KEY,
     }
-    DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@moviebooking.com')
+    DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'yaja23aiml@cmrit.ac.in')
     print("✅ EMAIL: Using SendGrid backend (SENDGRID_API_KEY is set)")
 elif not DEBUG:
     import warnings
@@ -298,11 +301,11 @@ elif not DEBUG:
         "Free tier limit: 100 emails/day."
     )
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-    DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@moviebooking.com')
+    DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'yaja23aiml@cmrit.ac.in')
     print("❌ EMAIL: Using console backend (SENDGRID_API_KEY not set in production)")
 else:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-    DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@moviebooking.com')
+    DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'yaja23aiml@cmrit.ac.in')
     print("🧪 EMAIL: Using console backend (development mode)")
 
 SITE_URL = os.environ.get('SITE_URL', 'http://localhost:8000')

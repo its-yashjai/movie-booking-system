@@ -153,9 +153,16 @@ def booking_summary(request, showtime_id):
     )
     
     from django.core.cache import cache
+    from django.conf import settings as django_settings
     cache_key = f"seat_reservation_{showtime_id}_{request.user.id}"
-    remaining_seconds = cache.ttl(cache_key)
-    
+
+    # cache.ttl() only works with Redis; DatabaseCache doesn't support it.
+    # Fall back to SEAT_RESERVATION_TIMEOUT when ttl() is unavailable.
+    try:
+        remaining_seconds = cache.ttl(cache_key)
+    except AttributeError:
+        remaining_seconds = getattr(django_settings, 'SEAT_RESERVATION_TIMEOUT', 600)
+
     context = {
         'showtime': showtime,
         'movie': showtime.movie,
@@ -163,7 +170,7 @@ def booking_summary(request, showtime_id):
         'seat_count': len(seat_ids),
         'price_details': price_details,
         'total_amount': price_details['total_amount'],
-        'expires_in_seconds': remaining_seconds if remaining_seconds > 0 else 600,
+        'expires_in_seconds': remaining_seconds if remaining_seconds and remaining_seconds > 0 else 600,
     }
     
     return render(request, 'bookings/booking_summary.html', context)
@@ -401,17 +408,19 @@ def payment_success(request, booking_id):
             booking.payment_method = 'RAZORPAY'
             booking.status = 'CONFIRMED'
             booking.confirmed_at = timezone.now()
-            
             booking.save()
+            
+            # Confirm seats inside the transaction so it's atomic with booking save
+            SeatManager.confirm_seats(booking.showtime.id, booking.seats)
         
         logger.info(f"✅ Booking {booking.booking_number} confirmed and payment received")
         
-        SeatManager.confirm_seats(booking.showtime.id, booking.seats)
-        
+        # Clean up session key after transaction is committed
         session_key = f'payment_page_visited_{booking.id}'
         if session_key in request.session:
             del request.session[session_key]
         
+        # Send email after transaction commits so DB is not locked during email I/O
         from .email_utils import send_booking_confirmation_email
         send_booking_confirmation_email(booking.id)
         
