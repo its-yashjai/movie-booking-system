@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: movie-booking-system
+    runtime: python
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn moviebooking.wsgi:application --bind 0.0.0.0:${PORT:-8000} --timeout 120 --workers 3"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.15
