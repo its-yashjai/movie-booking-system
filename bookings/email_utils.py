@@ -34,47 +34,53 @@ def send_email_safe(task_func, *args, **kwargs):
 @shared_task
 def send_booking_confirmation_email(booking_id):
     from .models import Booking
-    from django.db import transaction
     
     try:
         logger.info(f"🔄 [CONFIRMATION_EMAIL] Processing confirmation email for booking_id={booking_id}")
-        with transaction.atomic():
-            booking = Booking.objects.get(id=booking_id)
-            user = booking.user
-            
-            logger.info(
-                f"📧 [CONFIRMATION_EMAIL] Found booking: {booking.booking_number} | "
-                f"User: {user.email} | Status: {booking.status} | "
-                f"Payment Received: {booking.payment_received_at is not None}"
-            )
-            
 
-            if not booking.payment_received_at:
-                logger.warning(
-                    f"⏭️  SKIPPED: Confirmation email for {booking.booking_number} - "
-                    f"payment_received_at not set (payment not received yet)"
-                )
-                return f"Email not sent - payment not received yet"
-            
+        # Use update() for the idempotency flag — atomic at the DB row level,
+        # no explicit transaction needed, and safe with SQLite.
+        updated = Booking.objects.filter(
+            id=booking_id,
+            confirmation_email_sent=False,
+            status='CONFIRMED',
+        ).exclude(payment_received_at=None).update(confirmation_email_sent=True)
 
-            if booking.status != 'CONFIRMED':
-                logger.warning(
-                    f"⏭️  SKIPPED: Confirmation email for {booking.booking_number} - "
-                    f"Status is {booking.status}, not CONFIRMED"
-                )
-                return f"Email not sent - booking status is {booking.status}"
-            
+        if updated == 0:
+            # Either already sent, not confirmed, or payment not received — fetch to log why.
+            try:
+                booking = Booking.objects.get(id=booking_id)
+                if booking.confirmation_email_sent:
+                    logger.info(
+                        f"⏭️  SKIPPED: Confirmation email for {booking.booking_number} - "
+                        f"Already sent (idempotency check)"
+                    )
+                    return "Email already sent - skipping"
+                elif not booking.payment_received_at:
+                    logger.warning(
+                        f"⏭️  SKIPPED: Confirmation email for {booking.booking_number} - "
+                        f"payment_received_at not set (payment not received yet)"
+                    )
+                    return "Email not sent - payment not received yet"
+                else:
+                    logger.warning(
+                        f"⏭️  SKIPPED: Confirmation email for {booking.booking_number} - "
+                        f"Status is {booking.status}, not CONFIRMED"
+                    )
+                    return f"Email not sent - booking status is {booking.status}"
+            except Booking.DoesNotExist:
+                logger.error(f"❌ [CONFIRMATION_EMAIL] Booking {booking_id} not found")
+                return "Email not sent - booking not found"
 
-            if booking.confirmation_email_sent:
-                logger.info(
-                    f"⏭️  SKIPPED: Confirmation email for {booking.booking_number} - "
-                    f"Already sent (idempotency check)"
-                )
-                return f"Email already sent - skipping"
-            
-            booking.confirmation_email_sent = True
-            booking.save()
-        
+        booking = Booking.objects.get(id=booking_id)
+        user = booking.user
+
+        logger.info(
+            f"📧 [CONFIRMATION_EMAIL] Found booking: {booking.booking_number} | "
+            f"User: {user.email} | Status: {booking.status} | "
+            f"Payment Received: {booking.payment_received_at is not None}"
+        )
+
         logger.info(f"📧 Generating confirmation email for booking {booking.booking_number}")
         
         context = {
@@ -109,48 +115,51 @@ def send_booking_confirmation_email(booking_id):
 def send_payment_failed_email(booking_id):
 
     from .models import Booking
-    from django.db import transaction
     
     try:
         logger.info(f"🔄 [FAILURE_EMAIL] Processing payment failed email for booking_id={booking_id}")
-        
 
-        with transaction.atomic():
-            booking = Booking.objects.get(id=booking_id)
-            user = booking.user
-            
-            logger.info(
-                f"❌ [FAILURE_EMAIL] Found booking: {booking.booking_number} | "
-                f"User: {user.email} | Status: {booking.status} | "
-                f"Payment Received: {booking.payment_received_at is not None}"
-            )
-            
+        # Atomically claim the "send failure email" slot via update() — no transaction block needed.
+        updated = Booking.objects.filter(
+            id=booking_id,
+            failure_email_sent=False,
+            status='FAILED',
+            payment_received_at=None,
+        ).update(failure_email_sent=True)
 
-            if booking.payment_received_at:
-                logger.warning(
-                    f"⏭️  Skipping payment failed email for {booking.booking_number} - "
-                    f"payment_received_at is set ({booking.payment_received_at}). Payment actually succeeded!"
-                )
-                return f"Email not sent - payment was received"
-            
+        if updated == 0:
+            try:
+                booking = Booking.objects.get(id=booking_id)
+                if booking.payment_received_at:
+                    logger.warning(
+                        f"⏭️  Skipping payment failed email for {booking.booking_number} - "
+                        f"payment_received_at is set ({booking.payment_received_at}). Payment actually succeeded!"
+                    )
+                    return "Email not sent - payment was received"
+                elif booking.failure_email_sent:
+                    logger.warning(
+                        f"⏭️  Skipping payment failed email for {booking.booking_number} - "
+                        f"Email already sent"
+                    )
+                    return "Email already sent - skipping"
+                else:
+                    logger.warning(
+                        f"⏭️  Skipping payment failed email for {booking.booking_number} - "
+                        f"Status is {booking.status}, not FAILED"
+                    )
+                    return f"Email not sent - booking status is {booking.status}"
+            except Booking.DoesNotExist:
+                logger.error(f"❌ [FAILURE_EMAIL] Booking {booking_id} not found")
+                return "Email not sent - booking not found"
 
-            if booking.status != 'FAILED':
-                logger.warning(
-                    f"⏭️  Skipping payment failed email for {booking.booking_number} - "
-                    f"Status is {booking.status}, not FAILED"
-                )
-                return f"Email not sent - booking status is {booking.status}"
-            
+        booking = Booking.objects.get(id=booking_id)
+        user = booking.user
 
-            if booking.failure_email_sent:
-                logger.warning(
-                    f"⏭️  Skipping payment failed email for {booking.booking_number} - "
-                    f"Email already sent"
-                )
-                return f"Email already sent - skipping"
-            
-            booking.failure_email_sent = True
-            booking.save()
+        logger.info(
+            f"❌ [FAILURE_EMAIL] Found booking: {booking.booking_number} | "
+            f"User: {user.email} | Status: {booking.status} | "
+            f"Payment Received: {booking.payment_received_at is not None}"
+        )
         
         logger.info(f"📧 Generating payment failed email for booking {booking.booking_number}")
         
