@@ -127,11 +127,11 @@ else:
 
 if not DEBUG:
     DATABASES['default']['CONN_MAX_AGE'] = 600
-# Cache configuration - use Redis if available, otherwise use database
+# Cache configuration - use Redis if available, then LocMemCache in dev, DatabaseCache in prod
 REDIS_URL = os.environ.get('REDIS_URL', '')
 
 if REDIS_URL:
-    # Use Redis if configured
+    # Production with Redis (Render, Railway, etc.)
     CACHES = {
         'default': {
             'BACKEND': 'django_redis.cache.RedisCache',
@@ -145,8 +145,18 @@ if REDIS_URL:
             'KEY_PREFIX': 'moviebooking',
         }
     }
+elif DEBUG:
+    # Development: use in-memory cache — NEVER hits the DB, so no SQLite deadlocks.
+    # Note: each process has its own memory, but in dev (single worker) that's fine.
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'moviebooking-dev',
+        }
+    }
 else:
-    # Fallback to database cache (works without Redis)
+    # Production without Redis: DatabaseCache is safe here because production
+    # uses PostgreSQL (separate DB from cache), not SQLite.
     CACHES = {
         'default': {
             'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
