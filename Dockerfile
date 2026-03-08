@@ -36,4 +36,4 @@ EXPOSE 8000
 
 # Run migrations on startup, then start server
 # Note: Superuser creation and admin verification only happen if needed (via management commands with safety checks)
-CMD ["sh", "-c", "python manage.py migrate && gunicorn moviebooking.wsgi:application --bind 0.0.0.0:${PORT:-8000} --timeout 120 --workers 3"]
+CMD ["sh", "-c", "python manage.py migrate && python manage.py createcachetable 2>/dev/null || true && gunicorn moviebooking.wsgi:application --bind 0.0.0.0:${PORT:-8000} --timeout 120 --workers 3"]
