@@ -5,7 +5,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.views.static import serve
 from django.views import View
-from django.http import FileResponse
+from django.http import FileResponse, JsonResponse
 import os
 
 class MediaServeView(View):
@@ -17,10 +17,13 @@ class MediaServeView(View):
         raise Http404(f"Media file not found: {path}")
 
 def home_redirect(request):
-
     return redirect('login')
 
+def health_check(request):
+    return JsonResponse({'status': 'ok'})
+
 urlpatterns = [
+    path('health/', health_check, name='health_check'),
     path('custom-admin/', include('custom_admin.urls')),
     path('admin/', admin.site.urls),
     path('accounts/', include('accounts.urls')),
