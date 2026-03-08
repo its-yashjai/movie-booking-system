@@ -428,8 +428,13 @@ def payment_success(request, booking_id):
             del request.session[session_key]
         
         # Send email after transaction commits so DB is not locked during email I/O
-        from .email_utils import send_booking_confirmation_email
-        send_booking_confirmation_email(booking.id)
+        try:
+            from .email_utils import send_booking_confirmation_email
+            logger.info(f"📧 Triggering confirmation email for booking {booking.booking_number}")
+            result = send_booking_confirmation_email(booking.id)
+            logger.info(f"📧 Confirmation email result: {result}")
+        except Exception as email_exc:
+            logger.error(f"❌ Failed to send confirmation email for {booking.booking_number}: {email_exc}", exc_info=True)
         
         messages.success(request, 'Ticket booked successfully!')
         return redirect('booking_detail', booking_id=booking.id)
